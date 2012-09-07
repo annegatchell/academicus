@@ -118,13 +118,6 @@ int main (int argc, char * argv[] )
 		}
 		
 		printf("The client says %s\n", buffer);
-		
-		
-
-		printf("buffer %s\n",buffer);
-		printf("string %s\n","apple");
-		printf("size of apple %ld\n", sizeof("apple") );
-		printf("size of buffer %ld\n", sizeof(buffer) );
 
 		char msg[] = "orange";
 		if (stringcmp(buffer, "put ", 4))
@@ -188,6 +181,7 @@ int main (int argc, char * argv[] )
 		}
 		else if (stringcmp(buffer, "exit", 4))
 		{
+			done = 1;
 			printf("Exiting the server.........\n");
 			close(sock);
 		}

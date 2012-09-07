@@ -14,6 +14,46 @@
 
 #define MAXBUFSIZE 100
 
+/*char *trimwhitespace(char *str, char *trimmed, int trimmed_size);
+char *trimwhitespace(char *str, char *trimmed, int trimmed_size)
+{
+  char* temp;
+
+  temp = str;
+
+  // Get rid of leading whitespace
+  // Trim leading space
+  while(isspace(*str)) str++;
+
+  if(*str == 0)  // All spaces?
+    return str;
+
+  // Trim trailing space
+  end = str + strlen(str) - 1;
+  while(end > str && isspace(*end)) end--;
+
+  // Write new null terminator
+  *(end+1) = 0;
+
+  return str;
+}*/
+
+int stringcmp(char* input, char* comparison, int compLength);
+
+int stringcmp(char* input, char* comparison, int compLength)
+{
+	int i;
+	for(i = 0; i < compLength; i++)
+	{
+		printf("input[i] %c\n", input[i]);
+		if(input[i] == '\0' || input[i] != comparison[i])
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
 /* You will have to modify the program below */
 
 int main (int argc, char * argv[])
@@ -56,6 +96,7 @@ int main (int argc, char * argv[])
 
 
 
+
 	/**************
 	Causes the system to create a generic socket of type UDP (datagram)
 	//int socket(int domain, int type, int protocol); 
@@ -81,45 +122,119 @@ int main (int argc, char * argv[])
 		  it will report an error if the message fails to leave the computer
 		  however, with UDP, there is no error if the message is lost in the network once it leaves the computer.
 		 ******************/
-		char command[] = "ls";	
+		//char command[] = "ls";
+		//char* inst1, op1, op2, op3, op1clar, op2clar, op3clar,
+		char *inst1 = "Please enter one of the following options: \n";
+		char *op[] = {"put <file_name>\n","ls\n","exit\n"};
+		char *opclar[] = {"put<file_name> will send the file to the server.\n","ls will ask the server for a list of files in its directory\n", "exit will exit the server\n"};
+		//char op1 = "put <file_name>\n";
+		//op2 = "ls\n";
+		//op3 = "ls\n";
+		char command[50];
+		while(1){
+			bzero(command,sizeof(command));
+			fflush(stdin);
+			fputs("TYPE SHIT, MAN!\n", stdout);
+			fflush(stdout);
+			if ( fgets(command, sizeof command, stdin) != NULL )
+			{
+	      		char *newline = strchr(command, '\n'); /* search for newline character */
+				if ( newline != NULL )
+				{
+	         		*newline = '\0'; /* overwrite trailing newline */
+				}
+				printf("command = \"%s\"\n", command);
+			}
 
-		/*
-		int sendto(int sockfd, const void *msg, int len, unsigned int flags,
-        const struct sockaddr *to, socklen_t tolen); 
-        */
-	
-		if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
-		{
-			printf("Client error on packet send\n");
-		}
+			char file_buffer[512];
+			int num_bytes_returned;
+			if(stringcmp(command,"put", 3))
+			{
+				if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
+				{
+					printf("Client error on packet send %s\n",command);
+				}
+				if((nbytesrecv = recvfrom(sock, buffer, MAXBUFSIZE, 0, (struct sockaddr *)&remote, &remote_length)) == -1)
+			   	{
+			   		printf("error on packet receive\n");
+			   	}
+			   	printf("The server says %s\n", buffer);
+			   	if(buffer[0] == 'y'){
+					//FILE *fopen(const char *filename, const char *mode);
+					FILE *fp;
+					const char* filename;
+					filename = &buffer[4];
+					fp = fopen(filename,"r");
+					do{
+						//size_t fread(void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);
+						num_bytes_returned = fread(file_buffer,sizeof(char),sizeof(file_buffer),fp);
+						if(num_bytes_returned==-1)
+						{
+							printf("Error Reading File, Try again...\n");
+							break;
+						}
+						else if(num_bytes_returned > 0)
+						{
+							if((nbytes = sendto(sock, file_buffer, sizeof(file_buffer), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
+							{
+								printf("Client error on packet send\n");
+							}
 
-		// Blocks till bytes are received
-		struct sockaddr_in from_addr;
-		int addr_length = sizeof(struct sockaddr);
-		bzero(buffer,sizeof(buffer));
+						}
+					}while(num_bytes_returned > 0);
+					fclose(fp);
+				}
+				bzero(command,sizeof(command));
+				command[0] = 'e';
+				if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
+				{
+					printf("Client error on packet send %s\n",command);
+				}
+				if((nbytesrecv = recvfrom(sock, buffer, MAXBUFSIZE, 0, (struct sockaddr *)&remote, &remote_length)) == -1)
+			   	{
+			   		printf("error on packet receive\n");
+			   	}
+			   	printf("The server says %s\n", buffer);
+			}
+			else{
+				/*
+				int sendto(int sockfd, const void *msg, int len, unsigned int flags,
+		        const struct sockaddr *to, socklen_t tolen); 
+		        */
+				
+				if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
+				{
+					printf("Client error on packet send\n");
+				}
 
-		/********
-		int recvfrom(int sockfd, void *buf, int len, unsigned int flags,
-	             struct sockaddr *from, int *fromlen); 
-	             
-	    sockfd = socket descriptor to read from
-	    *buf = buffer to read to
-	   	len = length of buffer to read to
-	   	flags = 0 WHY WHY WHY
-	   	from = a pointer to a local struct sockaddr_storage that will be filled with the IP address and port of the originating machine
-	   	fromlen = a local int that will be set to the size of the address in from
-		*********/		
-	   	if((nbytesrecv = recvfrom(sock, buffer, MAXBUFSIZE, 0, (struct sockaddr *)&remote, &remote_length)) == -1)
-	   	{
-	   		printf("error on packet receive\n");
-	   	}
-	   	printf("The server says %s\n", buffer);
-		//nbytes = **** CALL RECVFROM() HERE ****;  
+				// Blocks till bytes are received
+				/*struct sockaddr_in from_addr;
+				int addr_length = sizeof(struct sockaddr);*/
+				bzero(buffer,sizeof(buffer));
 
-		//printf("Server says %s\n", buffer);
-	//}
+				/********
+				int recvfrom(int sockfd, void *buf, int len, unsigned int flags,
+			             struct sockaddr *from, int *fromlen); 
+			             
+			    sockfd = socket descriptor to read from
+			    *buf = buffer to read to
+			   	len = length of buffer to read to
+			   	flags = 0 WHY WHY WHY
+			   	from = a pointer to a local struct sockaddr_storage that will be filled with the IP address and port of the originating machine
+			   	fromlen = a local int that will be set to the size of the address in from
+				*********/		
+			   	if((nbytesrecv = recvfrom(sock, buffer, MAXBUFSIZE, 0, (struct sockaddr *)&remote, &remote_length)) == -1)
+			   	{
+			   		printf("error on packet receive\n");
+			   	}
+			   	printf("The server says %s\n", buffer);
+			}
+			//nbytes = **** CALL RECVFROM() HERE ****;  
+		   
+			//printf("Server says %s\n", buffer);
+		//}
 
-
+	   }
 
 	close(sock);
 
