@@ -145,6 +145,7 @@ int main (int argc, char * argv[] )
 				//size_t fwrite(const void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);
 				if(!stringcmp(buffer, "e",1)){
 					number_of_bytes_written = fwrite(buffer,sizeof(char),sizeof(buffer),fp);
+					printf("number of bytes %d\n", number_of_bytes_written);
 				}
 			}while(!stringcmp(buffer, "e",1));
 			fclose(fp);

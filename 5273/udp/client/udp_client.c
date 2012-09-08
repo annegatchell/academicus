@@ -144,7 +144,7 @@ int main (int argc, char * argv[])
 		//op3 = "ls\n";
 		char command[50];
 		FILE *fp;
-		char filename[50];
+		char* filename;
 		while(1){
 			bzero(command,sizeof(command));
 			fflush(stdin);
@@ -164,6 +164,7 @@ int main (int argc, char * argv[])
 			int num_bytes_returned;
 			if(stringcmp(command,"put ", 4))
 			{
+				printf("HERE\n");
 				if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
 				{
 					printf("Client error on packet send %s\n",command);
@@ -176,8 +177,9 @@ int main (int argc, char * argv[])
 			   	//if(buffer[0] == 'y'){
 					//FILE *fopen(const char *filename, const char *mode);
 			   		//memcpy(filename, command,sizeof(command));
-					char *foo = "foo1";
-  					memcpy(filename,foo,sizeof(foo));
+			   		filename = &command[4];
+					//char *foo = "foo1";
+  					//memcpy(filename,foo,sizeof(foo));
   					printf("filename %s\n",filename);
 					fp = fopen(filename,"r");
 					do{
