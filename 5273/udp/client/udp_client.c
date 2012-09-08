@@ -11,34 +11,46 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <errno.h>
+#include <ctype.h>
 
 #define MAXBUFSIZE 100
 
-/*char *trimwhitespace(char *str, char *trimmed, int trimmed_size);
-char *trimwhitespace(char *str, char *trimmed, int trimmed_size)
-{
-  char* temp;
 
+
+//char *trimwhitespace(char *str, char *trimmed, int trimmed_size);
+int trimwhitespace(char *str, char *trimmed/*, int trimmed_size*/)
+{
+  
+  char* temp;
   temp = str;
+  char* end;
 
   // Get rid of leading whitespace
   // Trim leading space
-  while(isspace(*str)) str++;
+  while(isspace(*temp)) 
+  	{temp++;}
 
-  if(*str == 0)  // All spaces?
-    return str;
+  printf("temp %s\n", temp);
+
+  if(*temp == 0)  // All spaces?
+    return 0; //Returns 0 is empty string
+
 
   // Trim trailing space
-  end = str + strlen(str) - 1;
-  while(end > str && isspace(*end)) end--;
+  end = temp + sizeof(temp) - 1;
+  while(end > temp && isspace(*end)) 
+  { end--;}
+  printf("temp %s\n", temp);
 
   // Write new null terminator
   *(end+1) = 0;
+  printf("temp %s\n", temp);
+  memcpy(trimmed, temp, sizeof(temp));
 
-  return str;
-}*/
+  return 1;
+}
 
-int stringcmp(char* input, char* comparison, int compLength);
+//int stringcmp(char* input, char* comparison, int compLength);
 
 int stringcmp(char* input, char* comparison, int compLength)
 {
@@ -131,10 +143,12 @@ int main (int argc, char * argv[])
 		//op2 = "ls\n";
 		//op3 = "ls\n";
 		char command[50];
+		FILE *fp;
+		char filename[50];
 		while(1){
 			bzero(command,sizeof(command));
 			fflush(stdin);
-			fputs("TYPE SHIT, MAN!\n", stdout);
+			fputs("TYPE, MAN!\n", stdout);
 			fflush(stdout);
 			if ( fgets(command, sizeof command, stdin) != NULL )
 			{
@@ -146,9 +160,9 @@ int main (int argc, char * argv[])
 				printf("command = \"%s\"\n", command);
 			}
 
-			char file_buffer[512];
+			char file_buffer[1024];
 			int num_bytes_returned;
-			if(stringcmp(command,"put", 3))
+			if(stringcmp(command,"put ", 4))
 			{
 				if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
 				{
@@ -159,11 +173,12 @@ int main (int argc, char * argv[])
 			   		printf("error on packet receive\n");
 			   	}
 			   	printf("The server says %s\n", buffer);
-			   	if(buffer[0] == 'y'){
+			   	//if(buffer[0] == 'y'){
 					//FILE *fopen(const char *filename, const char *mode);
-					FILE *fp;
-					const char* filename;
-					filename = &buffer[4];
+			   		//memcpy(filename, command,sizeof(command));
+					char *foo = "foo1";
+  					memcpy(filename,foo,sizeof(foo));
+  					printf("filename %s\n",filename);
 					fp = fopen(filename,"r");
 					do{
 						//size_t fread(void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);
@@ -183,18 +198,19 @@ int main (int argc, char * argv[])
 						}
 					}while(num_bytes_returned > 0);
 					fclose(fp);
-				}
+				//}
+				printf("the file is closed, send end\n");
 				bzero(command,sizeof(command));
 				command[0] = 'e';
 				if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
 				{
 					printf("Client error on packet send %s\n",command);
 				}
-				if((nbytesrecv = recvfrom(sock, buffer, MAXBUFSIZE, 0, (struct sockaddr *)&remote, &remote_length)) == -1)
+				/*if((nbytesrecv = recvfrom(sock, buffer, MAXBUFSIZE, 0, (struct sockaddr *)&remote, &remote_length)) == -1)
 			   	{
 			   		printf("error on packet receive\n");
 			   	}
-			   	printf("The server says %s\n", buffer);
+			   	printf("The server says %s\n", buffer);*/
 			}
 			else{
 				/*
@@ -230,7 +246,7 @@ int main (int argc, char * argv[])
 			   	printf("The server says %s\n", buffer);
 			}
 			//nbytes = **** CALL RECVFROM() HERE ****;  
-		   
+		   	printf("Bottom of loop %s\n", buffer);
 			//printf("Server says %s\n", buffer);
 		//}
 

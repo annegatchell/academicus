@@ -14,7 +14,7 @@
 #include <string.h>
 /* You will have to modify the program below */
 
-#define MAXBUFSIZE 100
+#define MAXBUFSIZE 1024
 #define PATH_MAX 512 //
 #define FILENM_MAX 512 //No the machine
 
@@ -119,7 +119,7 @@ int main (int argc, char * argv[] )
 		
 		printf("The client says %s\n", buffer);
 
-		char msg[] = "orange";
+		char msg[] = "y";
 		if (stringcmp(buffer, "put ", 4))
 		{
 			
@@ -131,7 +131,30 @@ int main (int argc, char * argv[] )
 			{
 				printf("Client error on packet send\n");
 			}
-			printf("Server received file\n");
+			//printf("Server received file\n");
+			FILE *fp;
+			const char* filename;
+			filename = &buffer[4];
+			printf("filename %s\n", filename);		
+			fp = fopen(filename,"a");
+			int number_of_bytes_written;
+			do{
+				bzero(buffer,sizeof(buffer));
+				if((nbytes = recvfrom(sock, buffer, MAXBUFSIZE, 0, (struct sockaddr *)&remote, &remote_length)) == -1)
+					{printf("error on packet receive\n");}
+				//size_t fwrite(const void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);
+				if(!stringcmp(buffer, "e",1)){
+					number_of_bytes_written = fwrite(buffer,sizeof(char),sizeof(buffer),fp);
+				}
+			}while(!stringcmp(buffer, "e",1));
+			fclose(fp);
+			printf("wrote the file\n");
+			/*char done[] = "Done";
+			if((nbytes = sendto(sock, &done, sizeof(done), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
+			{
+				printf("Client error on packet send\n");
+			}*/
+
 		}
 		else if (stringcmp(buffer, "ls", 2))
 		{
@@ -175,13 +198,21 @@ int main (int argc, char * argv[] )
 			
 			if((nbytes = sendto(sock, &path, sizeof(path), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
 			{
-				printf("Client error on packet send\n");
+				printf("SErver error on packet send\n");
 			}
 			printf("Server sent file path\n");
 		}
 		else if (stringcmp(buffer, "exit", 4))
 		{
+			bzero(buffer,sizeof(buffer));
+			char exitmsg[] = "Exiting the server";
+			memcpy(buffer, exitmsg, sizeof(exitmsg));
+			//free(exitmsg);
 			done = 1;
+			if((nbytes = sendto(sock, &buffer, sizeof(buffer), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
+			{
+				printf("Client error on packet send\n");
+			}
 			printf("Exiting the server.........\n");
 			close(sock);
 		}
