@@ -133,7 +133,7 @@ int main (int argc, char * argv[] )
 			}
 			//printf("Server received file\n");
 			FILE *fp;
-			const char* filename;
+			char* filename;
 			filename = &buffer[4];
 			printf("filename %s\n", filename);		
 			fp = fopen(filename,"a");
@@ -148,7 +148,7 @@ int main (int argc, char * argv[] )
 				}
 			}while(!stringcmp(buffer, "e",1));
 			fclose(fp);
-			printf("wrote the file\n");
+			
 			/*char done[] = "Done";
 			if((nbytes = sendto(sock, &done, sizeof(done), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
 			{

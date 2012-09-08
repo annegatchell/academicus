@@ -246,7 +246,7 @@ int main (int argc, char * argv[])
 			   	printf("The server says %s\n", buffer);
 			}
 			//nbytes = **** CALL RECVFROM() HERE ****;  
-		   	printf("Bottom of loop %s\n", buffer);
+		   	printf("Bottom of loop\n");
 			//printf("Server says %s\n", buffer);
 		//}
 
