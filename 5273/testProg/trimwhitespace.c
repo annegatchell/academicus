@@ -4,34 +4,39 @@
 #include <ctype.h>
 
 
-int trimwhitespace(char *str, char *trimmed/*, int trimmed_size*/)
+int trimwhitespace(char *str, char *trimmed, size_t trimmed_size)
 {
+  
   
   char* temp;
   temp = str;
-  char* end;
+  char* end = temp + trimmed_size - 1;
 
+  printf("temp %slll\n", temp);
   // Get rid of leading whitespace
   // Trim leading space
   while(isspace(*temp)) 
   	{temp++;}
 
-  printf("temp %s\n", temp);
+  printf("temp %slll\n", temp);
 
   if(*temp == 0)  // All spaces?
     return 0; //Returns 0 is empty string
 
 
   // Trim trailing space
-  end = temp + sizeof(temp) - 1;
+  //end = temp + strlen(temp) - 1;
   while(end > temp && isspace(*end)) 
   { end--;}
-  printf("temp %s\n", temp);
+  printf("temp %slll\n", temp);
 
   // Write new null terminator
-  *(end+1) = 0;
-  printf("temp %s\n", temp);
-  memcpy(trimmed, temp, sizeof(temp));
+  size_t stringSize = (end - temp) < trimmed_size-1 ? (end - str) : (trimmed_size - 1);
+  trimmed[stringSize] = 0;
+  printf("temp %slll\n", temp);
+
+  memcpy(trimmed, temp, trimmed_size);
+
 
   return 1;
 }
@@ -40,19 +45,20 @@ int main()
 {
   char string[50];
   bzero(&string,sizeof(string));
-  char * apple = "   apple   ";
-  memcpy(string, apple, sizeof(apple));
+  char * apple = "     longlonglonglonglong    ";
+  memcpy(string, apple, sizeof(string));
 
+  printf("apple, size: %s, %ld \n", apple, sizeof(apple));
   printf("string, size: %s, %ld \n", string, sizeof(string));
 
   char trim[50];
-  int err = trimwhitespace(string, trim);
+  int err = trimwhitespace(string, trim,sizeof(trim));
 
   printf("err %d\n", err);
   printf("string, size: %s, %ld \n", string, sizeof(string));
-  printf("trim, size: %s, %ld \n", trim, sizeof(string));
+  printf("trim, size: %s, %ld \n", trim, sizeof(trim));
 
-  FILE *fp;
+  /*FILE *fp;
   char file_buffer[512];
   int num_bytes_returned;
   char filename[50];
@@ -73,7 +79,7 @@ int main()
 
   fclose(fp);
 
-
+*/
 
   return 0;
 }

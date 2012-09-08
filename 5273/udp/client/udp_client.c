@@ -18,34 +18,34 @@
 
 
 //char *trimwhitespace(char *str, char *trimmed, int trimmed_size);
-int trimwhitespace(char *str, char *trimmed/*, int trimmed_size*/)
+int trimwhitespace(char *str, char *trimmed, size_t trimmed_size)
 {
+  
   
   char* temp;
   temp = str;
-  char* end;
+  char* end = temp + trimmed_size - 1;
 
-  // Get rid of leading whitespace
-  // Trim leading space
   while(isspace(*temp)) 
   	{temp++;}
-
-  printf("temp %s\n", temp);
 
   if(*temp == 0)  // All spaces?
     return 0; //Returns 0 is empty string
 
 
   // Trim trailing space
-  end = temp + sizeof(temp) - 1;
+  //end = temp + strlen(temp) - 1;
   while(end > temp && isspace(*end)) 
   { end--;}
-  printf("temp %s\n", temp);
+  //printf("temp %slll\n", temp);
 
   // Write new null terminator
-  *(end+1) = 0;
-  printf("temp %s\n", temp);
-  memcpy(trimmed, temp, sizeof(temp));
+  size_t stringSize = (end - temp) < trimmed_size-1 ? (end - str) : (trimmed_size - 1);
+  trimmed[stringSize] = 0;
+  //printf("temp %slll\n", temp);
+
+  memcpy(trimmed, temp, trimmed_size);
+
 
   return 1;
 }
@@ -57,7 +57,7 @@ int stringcmp(char* input, char* comparison, int compLength)
 	int i;
 	for(i = 0; i < compLength; i++)
 	{
-		printf("input[i] %c\n", input[i]);
+		//printf("input[i] %c\n", input[i]);
 		if(input[i] == '\0' || input[i] != comparison[i])
 		{
 			return 0;
@@ -136,19 +136,28 @@ int main (int argc, char * argv[])
 		 ******************/
 		//char command[] = "ls";
 		//char* inst1, op1, op2, op3, op1clar, op2clar, op3clar,
-		char *inst1 = "Please enter one of the following options: \n";
-		char *op[] = {"put <file_name>\n","ls\n","exit\n"};
-		char *opclar[] = {"put<file_name> will send the file to the server.\n","ls will ask the server for a list of files in its directory\n", "exit will exit the server\n"};
+		char *inst1 = "\nPlease enter one of the following options: \n";
+		char *op[] = {"put <file_name>\n","ls\n","exit\n\n"};
+		//char *opclar[] = {"put<file_name> will send the file to the server.\n","ls will ask the server for a list of files in its directory\n", "exit will exit the server\n"};
 		//char op1 = "put <file_name>\n";
 		//op2 = "ls\n";
 		//op3 = "ls\n";
 		char command[50];
+		char trimmer[50];
 		FILE *fp;
 		char* filename;
 		while(1){
 			bzero(command,sizeof(command));
 			fflush(stdin);
-			fputs("TYPE, MAN!\n", stdout);
+			fputs(inst1, stdout);
+			int i;
+			for(i=0;i<3;i++){
+				fputs(op[i],stdout);
+			}
+			/*for(i=0;i<3;i++){
+				fputs(opclar[i],stdout);
+			}*/
+			
 			fflush(stdout);
 			if ( fgets(command, sizeof command, stdin) != NULL )
 			{
@@ -157,62 +166,83 @@ int main (int argc, char * argv[])
 				{
 	         		*newline = '\0'; /* overwrite trailing newline */
 				}
-				printf("command = \"%s\"\n", command);
+				//printf("command = \"%s\"\n", command);
 			}
+			//printf("command %s\n", command);
+			trimwhitespace(command, trimmer,sizeof(trimmer));
+			//printf("command %s\n", command);
+			//printf("trimmer %s\n", trimmer);
+			strcpy(command,trimmer);
+
+			bzero(trimmer,sizeof(trimmer));
+			printf("\n");
 
 			char file_buffer[1024];
 			int num_bytes_returned;
 			if(stringcmp(command,"put ", 4))
 			{
-				printf("HERE\n");
-				if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
-				{
-					printf("Client error on packet send %s\n",command);
-				}
-				if((nbytesrecv = recvfrom(sock, buffer, MAXBUFSIZE, 0, (struct sockaddr *)&remote, &remote_length)) == -1)
-			   	{
-			   		printf("error on packet receive\n");
-			   	}
-			   	printf("The server says %s\n", buffer);
-			   	//if(buffer[0] == 'y'){
-					//FILE *fopen(const char *filename, const char *mode);
-			   		//memcpy(filename, command,sizeof(command));
-			   		filename = &command[4];
-					//char *foo = "foo1";
-  					//memcpy(filename,foo,sizeof(foo));
-  					printf("filename %s\n",filename);
-					fp = fopen(filename,"r");
-					do{
-						//size_t fread(void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);
-						num_bytes_returned = fread(file_buffer,sizeof(char),sizeof(file_buffer),fp);
-						if(num_bytes_returned==-1)
-						{
-							printf("Error Reading File, Try again...\n");
-							break;
-						}
-						else if(num_bytes_returned > 0)
-						{
-							if((nbytes = sendto(sock, file_buffer, sizeof(file_buffer), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
+				filename = &command[4];
+				fp = fopen(filename,"r");
+				if(fp != NULL){
+					//printf("HERE\n");
+					if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
+					{printf("Client error on packet send %s\n",command);}
+					if((nbytesrecv = recvfrom(sock, buffer, MAXBUFSIZE, 0, (struct sockaddr *)&remote, &remote_length)) == -1)
+				   	{printf("error on packet receive\n");}
+				   	//printf("The server says %s\n", buffer);
+				   	if(buffer[0] == 'y'){
+						//FILE *fopen(const char *filename, const char *mode);
+				   		//memcpy(filename, command,sizeof(command));
+						do{
+							//size_t fread(void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);
+							num_bytes_returned = fread(file_buffer,sizeof(char),sizeof(file_buffer),fp);
+							if(num_bytes_returned==-1)
 							{
-								printf("Client error on packet send\n");
+								printf("Error Reading File, Try again...\n");
+								break;
 							}
+							else if(num_bytes_returned > 0)
+							{
+								if((nbytes = sendto(sock, file_buffer, sizeof(file_buffer), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
+								{
+									printf("Client error on packet send\n");
+								}
 
+							}
+						}while(num_bytes_returned > 0);
+						fclose(fp);
+					
+					
+					//printf("the file is closed, send end\n");
+						bzero(command,sizeof(command));
+						command[0] = 'e';
+						if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
+						{
+							printf("Client error on packet send %s\n",command);
 						}
-					}while(num_bytes_returned > 0);
-					fclose(fp);
-				//}
-				printf("the file is closed, send end\n");
-				bzero(command,sizeof(command));
-				command[0] = 'e';
-				if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
-				{
-					printf("Client error on packet send %s\n",command);
+					}	
+				}
+				else{
+						bzero(command,sizeof(command));
+						printf("File does not exist\n\n");
 				}
 				/*if((nbytesrecv = recvfrom(sock, buffer, MAXBUFSIZE, 0, (struct sockaddr *)&remote, &remote_length)) == -1)
 			   	{
 			   		printf("error on packet receive\n");
 			   	}
 			   	printf("The server says %s\n", buffer);*/
+			}
+			else if(stringcmp(command,"ls",2)){
+				if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
+				{
+					printf("Client error on packet send\n");
+				}
+				bzero(buffer,sizeof(buffer));
+				if((nbytesrecv = recvfrom(sock, buffer, MAXBUFSIZE, 0, (struct sockaddr *)&remote, &remote_length)) == -1)
+			   	{
+			   		printf("error on packet receive\n");
+			   	}
+			   	printf("Server says:\n%s\n", buffer);
 			}
 			else{
 				/*
@@ -245,10 +275,10 @@ int main (int argc, char * argv[])
 			   	{
 			   		printf("error on packet receive\n");
 			   	}
-			   	printf("The server says %s\n", buffer);
+			   	printf("%s\n", buffer);
 			}
 			//nbytes = **** CALL RECVFROM() HERE ****;  
-		   	printf("Bottom of loop\n");
+		   	//printf("Bottom of loop\n");
 			//printf("Server says %s\n", buffer);
 		//}
 
