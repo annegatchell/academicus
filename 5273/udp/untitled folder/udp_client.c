@@ -1,12 +1,3 @@
-//udp_client.c
-
-//Anne Gatchell
-//Programming Assignment #1
-//Networking Systems
-
-//7 Sept 2012
-
-
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -64,7 +55,7 @@ int trimwhitespace(char *str, char *trimmed, size_t trimmed_size)
 A function to compare the beginning of a string to a reference string
 input string is the original
 comparision string is the comparison
-compLength is how long 
+compLength is 
 */
 int stringcmp(char* input, char* comparison, int compLength)
 {
