@@ -23,10 +23,18 @@
 #include <ctype.h>
 
 #define MAXBUFSIZE 100
+#define MAXFILEBUFFERSIZE 1024
 
 
 
 //char *trimwhitespace(char *str, char *trimmed, int trimmed_size);
+
+/*Trim whitespace takes a pointer to a string, a pointer to the location of the
+  desired trimmed string, and the size of the trimmed string that has been passed
+  if it returns 0, the string passed was an empty string. Returns 1 on trimming 
+  succes
+  */
+
 int trimwhitespace(char *str, char *trimmed, size_t trimmed_size)
 {
   
@@ -64,7 +72,7 @@ int trimwhitespace(char *str, char *trimmed, size_t trimmed_size)
 A function to compare the beginning of a string to a reference string
 input string is the original
 comparision string is the comparison
-compLength is how long 
+compLength is how many characters of the reference string to compare to
 */
 int stringcmp(char* input, char* comparison, int compLength)
 {
@@ -84,7 +92,7 @@ int main (int argc, char * argv[])
 {
 
 	int nbytes;                             // number of bytes send by sendto()
-	int sock;                               //this will be our socket
+	int sock;                               // this will be our socket
 	char buffer[MAXBUFSIZE];
 	int nbytesrecv;							//number of bytes we receive in our message
 
@@ -104,7 +112,9 @@ int main (int argc, char * argv[])
 	 ******************/
 	bzero(&remote,sizeof(remote));               //zero the struct
 	remote.sin_family = AF_INET;                 //address family
-	remote.sin_port = htons(atoi(argv[2]));      //sets port to network byte order
+	remote.sin_port = htons(atoi(argv[2]));      //sets port from host byte order to network byte order
+	
+
 	//int inet_pton(int af, const char *src, void *dst);
 	//Converts the src character string into an address structure AF_INET or AF_INET6
 	int retVal;
@@ -134,10 +144,11 @@ int main (int argc, char * argv[])
 	}
 	printf("Client created a socket!\n");
 
-	/* 
+	/************* 
 	We do not need to call bind(), the system will decide the port and interface to use)
-	*/
-	printf("Sending packet apple\n");
+	**************/
+
+	//printf("Sending packet apple\n");
 
 	//while(1)
 	//{
@@ -159,19 +170,19 @@ int main (int argc, char * argv[])
 		FILE *fp;
 		char* filename;
 		while(1){
-			bzero(command,sizeof(command));
-			fflush(stdin);
-			fputs(inst1, stdout);
+			bzero(command,sizeof(command)); //Zero the command buffer
+			fflush(stdin); //Flush stdin
+			fputs(inst1, stdout); //Print initial command
 			int i;
 			for(i=0;i<3;i++){
-				fputs(op[i],stdout);
+				fputs(op[i],stdout); //Print options
 			}
 			/*for(i=0;i<3;i++){
 				fputs(opclar[i],stdout);
 			}*/
 			
-			fflush(stdout);
-			if ( fgets(command, sizeof command, stdin) != NULL )
+			fflush(stdout); //Flush stdout
+			if ( fgets(command, sizeof command, stdin) != NULL ) //If there is a user input
 			{
 	      		char *newline = strchr(command, '\n'); /* search for newline character */
 				if ( newline != NULL )
@@ -181,7 +192,7 @@ int main (int argc, char * argv[])
 				//printf("command = \"%s\"\n", command);
 			}
 			//printf("command %s\n", command);
-			trimwhitespace(command, trimmer,sizeof(trimmer));
+			trimwhitespace(command, trimmer,sizeof(trimmer)); //Trim excess whitespace of the command
 			//printf("command %s\n", command);
 			//printf("trimmer %s\n", trimmer);
 			strcpy(command,trimmer);
@@ -189,23 +200,29 @@ int main (int argc, char * argv[])
 			bzero(trimmer,sizeof(trimmer));
 			printf("\n");
 
-			char file_buffer[1024];
+			char file_buffer[MAXFILEBUFFERSIZE]; //Set up our file buffer
 			int num_bytes_returned;
+			/****
+			If the user has typed "put ", check to see if there is a filename/valid file
+			****/
 			if(stringcmp(command,"put ", 4))
 			{
 				filename = &command[4];
-				fp = fopen(filename,"r");
-				if(fp != NULL){
-					//printf("HERE\n");
+				fp = fopen(filename,"r"); //Open filename entered to fp file stream
+				if(fp != NULL){ //If this file exists
+					//Send the "put <filename>" to the server to let it know that a file is coming
 					if((nbytes = sendto(sock, &command, sizeof(command), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
 					{printf("Client error on packet send %s\n",command);}
+
+					//Wait for server response
 					if((nbytesrecv = recvfrom(sock, buffer, MAXBUFSIZE, 0, (struct sockaddr *)&remote, &remote_length)) == -1)
 				   	{printf("error on packet receive\n");}
-				   	//printf("The server says %s\n", buffer);
-				   	if(buffer[0] == 'y'){
-						//FILE *fopen(const char *filename, const char *mode);
-				   		//memcpy(filename, command,sizeof(command));
+				    
+				   	if(buffer[0] == 'y'){//If the server responds with 'y'
 						do{
+							/***
+							Read a file-buffer-sized portion of the file into our file buffer
+							***/
 							//size_t fread(void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);
 							num_bytes_returned = fread(file_buffer,sizeof(char),sizeof(file_buffer),fp);
 							if(num_bytes_returned==-1)
@@ -234,7 +251,7 @@ int main (int argc, char * argv[])
 						}
 					}	
 				}
-				else{
+				else{ //The file does not exist. Tell user that, and prompt for re-entry of command
 						bzero(command,sizeof(command));
 						printf("File does not exist\n\n");
 				}
@@ -279,7 +296,7 @@ int main (int argc, char * argv[])
 			    sockfd = socket descriptor to read from
 			    *buf = buffer to read to
 			   	len = length of buffer to read to
-			   	flags = 0 WHY WHY WHY
+			   	flags = 0
 			   	from = a pointer to a local struct sockaddr_storage that will be filled with the IP address and port of the originating machine
 			   	fromlen = a local int that will be set to the size of the address in from
 				*********/		
