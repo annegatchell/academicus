@@ -11,17 +11,19 @@ public class Rental{
 	int startDates;
 	Customer customer;
 	double cost;
+	int rentalID;
 
-	public Rental(List<Video> vids, int duration, Customer cus){
+	public Rental(List<Video> vids, int duration, Customer cus, int id){
 		this.isActive = true;
 		this.videos = new ArrayList<Video>(vids);
 		this.duration = duration;
 		this.remainingDays = duration;
-		this.customer = new Customer(customer);
+		this.customer = cus;
 		this.cost = 0;
 		for(Video vid : this.videos){
 			this.cost += vid.getPrice();
 		}
+		this.rentalID = id;
 	}
 
 	public Rental(){
@@ -31,9 +33,15 @@ public class Rental{
 		this.remainingDays = 0;
 		//this.customer = new Customer("none",new RegularBehavior(),new RentalInterface());
 		this.cost = 0;
+		this.rentalID = -1;
 	}
 
 	public void printRental(){
+		System.out.println("---RENTAL--id= "+this.rentalID+"----------");
+		if(!isActive){
+			System.out.print("in");
+		}
+		System.out.print("active\n");
 		System.out.println(customer.getName());
 		System.out.println("Rented "+this.videos.size()+
 						" videos for "+this.duration+" days");
@@ -41,13 +49,18 @@ public class Rental{
 			vid.printVideo();
 		}
 		System.out.println("Price of Rental: "+this.cost);
+		System.out.println("-----------------------------");
 	}
 
 	public boolean isDue(){
-		if(this.remainingDays == 0){
+		if(this.remainingDays <= 0){
 			return true;
 		}
 		return false;
+	}
+
+	public int getID(){
+		return this.rentalID;
 	}
 
 	public void setAvailabilityOfVideosInRental(boolean val){
@@ -72,7 +85,12 @@ public class Rental{
 		return this.isActive;
 	}
 
+	public int getRemainingDays(){
+		return this.remainingDays;
+	}
+
 	public void decrementRemainingDays(){
+		System.out.println("Decremented rentalID "+ this.rentalID);
 		this.remainingDays--;
 	}
 }

@@ -9,18 +9,21 @@ public class RentalStore implements RentalInterface{
 	ArrayList<Video> catalouge;
 	//RentalInterface rentalInterface;
 	ArrayList<Rental> rentals;
+	static int numberOfRentals;
 
 
 	public RentalStore(ArrayList<Video> videos){
 		this.revenue = 0.00;
 		this.catalouge = new ArrayList<Video>(videos);
 		this.rentals = new ArrayList<Rental>();
+		this.numberOfRentals = 0;
 	}
 
 	public boolean canTheyRentVideos(RentalRequest request){
 		int vidsToRent = getNumberOfAvailableVideos();
+		System.out.println(vidsToRent+" videos avaiable");
 		if(request.getNumVideos() <= vidsToRent && 
-			vidsToRent <= request.getMinRequested()){
+			vidsToRent >= request.getMinRequested()){
 			return true;
 		}
 		return false;
@@ -29,7 +32,7 @@ public class RentalStore implements RentalInterface{
 	public void aNewDay(){
 		for(Rental rental : rentals){
 			if(rental.isActive()){
-				rental.decrementRemainingDays();
+				//rental.decrementRemainingDays();
 			}
 		}
 	}
@@ -46,29 +49,66 @@ public class RentalStore implements RentalInterface{
 		else{
 			rental = new Rental(rentRandomVideos(req.getNumVideos()), 
 								req.getNumNights(), 
-								cus);
+								cus,this.numberOfRentals);
 		}
-		this.addToRevenue(rental.getCost());
+		this.numberOfRentals++;
+		addRentalToList(rental);
+		rental.printRental();
 		return rental;
 	}
 
+	public void addRentalToList(Rental rental){
+		this.rentals.add(rental);
+		this.addToRevenue(rental.getCost());
+
+	}
+
 	public void returnRental(Rental rental){
-		int index = rentals.indexOf(rental);
+		// int index = rentals.indexOf(rental);
+		// System.out.println("index "+index);
+		// index = rentals.indexOf(rentals.get(0));
+		// System.out.println("index "+index);
+		System.out.print("SUPPOSED TO RETURN");
+		int index = getIndexOfRentalInRentals(rental);
+		System.out.println("return index "+index);
 		rentals.get(index).deactivateRental();
+		System.out.print("RETURN:");
+		rentals.get(index).printRental();
+	}
+
+	public int getIndexOfRentalInRentals(Rental r){
+		System.out.println("here"+this.rentals.size());
+
+		for(int i = 0; i<this.rentals.size(); i++){
+			System.out.println("ID "+rentals.get(i));
+			if(rentals.get(i).getID() == r.getID()){
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	private List<Video> rentRandomVideos(int number){
-		Random generator = new Random();
 		ArrayList<Video> list = new ArrayList<Video>();
-		while(list.size() < number){
-			int num = generator.nextInt(number-1) + 1;
-			if(this.catalouge.get(num).getAvailability()){
-				this.catalouge.get(num).setAvailability(false);
-				list.add(this.catalouge.get(num));
+		if(number < getNumAvailableVideos()){
+			for(Video vid : this.catalouge){
+				if(vid.getAvailability() && list.size() < number){
+					vid.setAvailability(false);
+					list.add(vid);
+				}	
 			}
 		}
+		else{
+			for(Video vid : this.catalouge){
+				if(vid.getAvailability()){
+					vid.setAvailability(false);
+					list.add(vid);
+				}	
+			}
+		}
+
 		return list;
-	}
+	} 
 
 	public int getNumberOfAvailableVideos(){
 		int i = 0;

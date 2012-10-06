@@ -68,15 +68,16 @@ public class Simulation {
 
 		}
 
-		System.out.println("SUMMARY----------------------------");
+		System.out.println("SUMMARY-------------------------");
 		store.printNumAvailableVideosAndNames();
 		store.printRevenue();
 		System.out.println("Completed Rentals-----------------------");
 		store.printCompletedRentals();
 		System.out.println("Active Rentals-----------------------");
 		store.printActiveRentals();
-
-
+		for(Customer cus : customers.getCustomerList()){
+			System.out.println(cus.getNumberOfTimesNewDayCalled());
+		}
 		return;
 	}
 

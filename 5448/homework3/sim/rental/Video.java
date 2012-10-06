@@ -12,7 +12,7 @@ public class Video{
 	}
 
 	public void printVideo(){
-		System.out.println(this);
+		System.out.println(this.name);
 	}
 
 	public double getPrice(){

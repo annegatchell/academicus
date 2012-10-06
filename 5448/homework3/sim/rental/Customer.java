@@ -9,6 +9,7 @@ public class Customer{
 	ArrayList<Rental> activeRentals;
 	CustomerRentalBehavior rentalBehavior;
 	RentalInterface rentalInterface;
+	int newDayCalled;
 
 
 	public Customer(String name, CustomerRentalBehavior behavior, RentalInterface intf){
@@ -16,10 +17,11 @@ public class Customer{
 		this.rentalBehavior = behavior;
 		this.numberRented = 0;
 		this.rentalInterface = intf;
+		this.activeRentals = new ArrayList<Rental>();
+		this.newDayCalled = 0;
 	}
 
 	public Customer(Customer cus){
-		this.name = cus.getName();
 		this.numberRented = cus.getNumberRented();
 		this.activeRentals = cus.getActiveRentals();
 		this.rentalBehavior = cus.getCustomerRentalBehavior();
@@ -27,23 +29,33 @@ public class Customer{
 	}
 
 	public void newDay(){
-		if(activeRentals.size()>0){
-			for(Rental rental : activeRentals){
-				rental.decrementRemainingDays();
-			}
+		newDayCalled++;
+		for(Rental rental : activeRentals){
+			rental.decrementRemainingDays();
 		}
+	}
+
+	public int getNumberOfTimesNewDayCalled(){
+		return this.newDayCalled;
 	}
 
 	public RentalRequest getRentalRequest(){
 		return this.rentalBehavior.howManyToRent();
 	}
 
+	public RentalRequest getRentalRequirements(){
+		return this.rentalBehavior.getRentalRequirements();
+	}
+
 	public boolean canIRentVideos(){
 		if(this.numberRented == 3){
 			return false;
 		}
-		System.out.print(this.getName());
-		return rentalInterface.canTheyRentVideos(this.getRentalRequest());
+		//System.out.println(this.name);
+		//this.getRentalRequirements().print();
+		boolean yes = rentalInterface.canTheyRentVideos(this.getRentalRequirements());
+		//System.out.println(yes);
+		return yes;
 	}
 
 	public void rentVideos(){
@@ -54,7 +66,9 @@ public class Customer{
 	}
 
 	public void returnDueRentals(){
+		System.out.println(this.name+" has "+ activeRentals.size()+" activeRentals");
 		for(Rental rental : activeRentals){
+			System.out.println(rental.getID()+" is due? "+rental.isDue()+ " "+rental.getRemainingDays());
 			if(rental.isDue()){
 				this.rentalInterface.returnRental(rental);
 				activeRentals.remove(rental);

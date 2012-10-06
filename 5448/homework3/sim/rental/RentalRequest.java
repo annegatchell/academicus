@@ -34,4 +34,10 @@ public class RentalRequest{
 	public void setMinRequested(int set){
 		this.minRequested = set;
 	}
+
+	public void print(){
+		System.out.println("#Vids: "+this.numVideos+
+						" #Nights"+this.numNights+
+						" MinVids"+this.minRequested);
+	}
 }
