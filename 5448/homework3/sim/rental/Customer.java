@@ -66,9 +66,17 @@ public class Customer{
 	}
 
 	public void returnDueRentals(){
-		System.out.println(this.name+" has "+ activeRentals.size()+" activeRentals");
+		//System.out.println(this.name+" has "+ activeRentals.size()+" activeRentals");
+		for(int i = 0; i < activeRentals.size(); i++){
+			//System.out.println(activeRentals.get(i).getID()+" is due? "+
+				//activeRentals.get(i).isDue()+ " "+activeRentals.get(i).getRemainingDays());
+			if(activeRentals.get(i).isDue()){
+				this.rentalInterface.returnRental(activeRentals.get(i));
+				activeRentals.remove(activeRentals.get(i));
+			}
+		}
 		for(Rental rental : activeRentals){
-			System.out.println(rental.getID()+" is due? "+rental.isDue()+ " "+rental.getRemainingDays());
+			//System.out.println(rental.getID()+" is due? "+rental.isDue()+ " "+rental.getRemainingDays());
 			if(rental.isDue()){
 				this.rentalInterface.returnRental(rental);
 				activeRentals.remove(rental);

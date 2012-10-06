@@ -60,8 +60,8 @@ public class Simulation {
 		//customers.canWeRent();
 		int date = 1;
 		for(date = 1; date < 36;date++){
-			System.out.println("DAY "+date+"-----------------------");
-			store.aNewDay();
+			//System.out.println("DAY "+date+"-----------------------");
+			//store.aNewDay();
 			customers.newDay();
 			customers.customersReturnVideos();
 			customers.customersRentVideos();
@@ -71,9 +71,13 @@ public class Simulation {
 		System.out.println("SUMMARY-------------------------");
 		store.printNumAvailableVideosAndNames();
 		store.printRevenue();
-		System.out.println("Completed Rentals-----------------------");
+		System.out.println("========================================");
+		System.out.println("COMPLETED RENTALS-----------------------");
+		System.out.println("========================================");
 		store.printCompletedRentals();
-		System.out.println("Active Rentals-----------------------");
+		System.out.println("========================================");
+		System.out.println("ACTIVE RENTALS-----------------------");
+		System.out.println("========================================");
 		store.printActiveRentals();
 		for(Customer cus : customers.getCustomerList()){
 			System.out.println(cus.getNumberOfTimesNewDayCalled());

@@ -21,7 +21,7 @@ public class RentalStore implements RentalInterface{
 
 	public boolean canTheyRentVideos(RentalRequest request){
 		int vidsToRent = getNumberOfAvailableVideos();
-		System.out.println(vidsToRent+" videos avaiable");
+		//System.out.println(vidsToRent+" Video(s) Avaiable");
 		if(request.getNumVideos() <= vidsToRent && 
 			vidsToRent >= request.getMinRequested()){
 			return true;
@@ -29,13 +29,13 @@ public class RentalStore implements RentalInterface{
 		return false;
 	}
 
-	public void aNewDay(){
-		for(Rental rental : rentals){
-			if(rental.isActive()){
-				//rental.decrementRemainingDays();
-			}
-		}
-	}
+	// public void aNewDay(){
+	// 	for(Rental rental : rentals){
+	// 		if(rental.isActive()){
+	// 			//rental.decrementRemainingDays();
+	// 		}
+	// 	}
+	// }
 
 	public void addToRevenue(double money){
 		this.revenue += money;
@@ -77,10 +77,10 @@ public class RentalStore implements RentalInterface{
 	}
 
 	public int getIndexOfRentalInRentals(Rental r){
-		System.out.println("here"+this.rentals.size());
+		//System.out.println("here"+this.rentals.size());
 
 		for(int i = 0; i<this.rentals.size(); i++){
-			System.out.println("ID "+rentals.get(i));
+			//System.out.println("ID "+rentals.get(i).getID());
 			if(rentals.get(i).getID() == r.getID()){
 				return i;
 			}
@@ -128,12 +128,14 @@ public class RentalStore implements RentalInterface{
 	}
 
 	public void printNumAvailableVideosAndNames(){
-		System.out.print(getNumAvailableVideos()+" videos available:");
+		System.out.println(getNumAvailableVideos()+" Video(s) Available:");
 		for(Video v : catalouge){
 			if(v.getAvailability()){
 				v.printVideo();
 			}
 		}
+		
+
 	}
 
 	public int getNumAvailableVideos(){

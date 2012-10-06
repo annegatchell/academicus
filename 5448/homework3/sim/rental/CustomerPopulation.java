@@ -56,41 +56,6 @@ public class CustomerPopulation{
 				this.customers.get(i).rentVideos();
 			}
 		}
-
-
-
-
-
-		// Random generator = new Random();
-		// int i = 0;
-		// int index
-		// int numRenters = generator.nextInt(4)+1;
-		// System.out.println(numRenters);
-		// Vector usedIndeces = new Vector();
-		// for(i = 0; i < numRenters; i++){
-		// 	index = generator.nextInt(this.customers.size());
-		// 	if()
-		// 	usedIndeces.add(index);
-		// 	this.customers
-		// }
-
-
-		// for(i = 0; i < numRenters; i++){
-		// 	if(this.customers.get(i).canIRentVideos()){
-		// 		this.customers.get(i).rentVideos();
-		// 	}
-		// 	else{
-		// 		if(i < this.customers.size()-1){
-		// 			i++;
-		// 		}
-		// 	}
-		// }
-		// for(Customer cus : customers){
-		// 		if(cus.canIRentVideos() && i<numRenters){
-		// 			cus.rentVideos();
-		// 			i++;
-		// 		}
-		// }
 	}
 
 	public ArrayList<Customer> getCustomerList(){
