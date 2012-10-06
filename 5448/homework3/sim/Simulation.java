@@ -52,11 +52,15 @@ public class Simulation {
 	}
 
 	public void run(){
-		System.out.println("sim");
+		//System.out.println("sim");
 		RentalStore store = new RentalStore(makeVideoList());
+		System.out.println("VIDEO STORE INVENTORY:");
 		store.printVideos();
+		System.out.println();
 		CustomerPopulation customers = new CustomerPopulation(makeCustomerList(store));
+		System.out.println("VIDEO STORE CUSTOMERS and BEHAVIORS:");
 		customers.printCustomerPop();
+		System.out.println();
 		//customers.canWeRent();
 		int date = 1;
 		for(date = 1; date < 36;date++){
@@ -67,21 +71,19 @@ public class Simulation {
 			customers.customersRentVideos();
 
 		}
-
-		System.out.println("SUMMARY-------------------------");
+		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+		System.out.println("@   SUMMARY                       @");
+		System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 		store.printNumAvailableVideosAndNames();
 		store.printRevenue();
 		System.out.println("========================================");
-		System.out.println("COMPLETED RENTALS-----------------------");
+		System.out.println("COMPLETED RENTALS");
 		System.out.println("========================================");
 		store.printCompletedRentals();
 		System.out.println("========================================");
-		System.out.println("ACTIVE RENTALS-----------------------");
+		System.out.println("ACTIVE RENTALS");
 		System.out.println("========================================");
 		store.printActiveRentals();
-		for(Customer cus : customers.getCustomerList()){
-			System.out.println(cus.getNumberOfTimesNewDayCalled());
-		}
 		return;
 	}
 

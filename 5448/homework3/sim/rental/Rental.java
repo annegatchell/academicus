@@ -90,7 +90,7 @@ public class Rental{
 	}
 
 	public void decrementRemainingDays(){
-		System.out.println("Decremented rentalID "+ this.rentalID);
+		//System.out.println("Decremented rentalID "+ this.rentalID);
 		this.remainingDays--;
 	}
 }

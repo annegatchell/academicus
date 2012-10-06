@@ -7,7 +7,6 @@ import java.util.Random;
 public class RentalStore implements RentalInterface{
 	double revenue;
 	ArrayList<Video> catalouge;
-	//RentalInterface rentalInterface;
 	ArrayList<Rental> rentals;
 	static int numberOfRentals;
 
@@ -53,7 +52,7 @@ public class RentalStore implements RentalInterface{
 		}
 		this.numberOfRentals++;
 		addRentalToList(rental);
-		rental.printRental();
+		//rental.printRental();
 		return rental;
 	}
 
@@ -64,16 +63,12 @@ public class RentalStore implements RentalInterface{
 	}
 
 	public void returnRental(Rental rental){
-		// int index = rentals.indexOf(rental);
-		// System.out.println("index "+index);
-		// index = rentals.indexOf(rentals.get(0));
-		// System.out.println("index "+index);
-		System.out.print("SUPPOSED TO RETURN");
+		//System.out.print("SUPPOSED TO RETURN");
 		int index = getIndexOfRentalInRentals(rental);
-		System.out.println("return index "+index);
+		//System.out.println("return index "+index);
 		rentals.get(index).deactivateRental();
-		System.out.print("RETURN:");
-		rentals.get(index).printRental();
+		//System.out.print("RETURN:");
+		//rentals.get(index).printRental();
 	}
 
 	public int getIndexOfRentalInRentals(Rental r){
@@ -168,6 +163,6 @@ public class RentalStore implements RentalInterface{
 	}
 
 	public void printRevenue(){
-		System.out.println("Revenue: "+revenue);
+		System.out.println("Revenue: $"+revenue+"0");
 	}
 }

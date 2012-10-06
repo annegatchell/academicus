@@ -48,7 +48,7 @@ public class CustomerPopulation{
 			while(usedIndeces.contains(randomIndex));
 			usedIndeces.add(randomIndex);
 		}
-		System.out.println("Renters are: "+usedIndeces);
+		//System.out.println("Renters are: "+usedIndeces);
 		int num;
 		for(int i=0;i<usedIndeces.size();i++){
 			num = usedIndeces.get(i);
