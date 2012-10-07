@@ -13,7 +13,7 @@
 #include <sys/time.h> /* select() */
 #include <signal.h>
 #include <unistd.h>
-#include "sendto_.h"
+#include "../sendto_.h"
 
 #define REMOTE_SERVER_PORT 50000
 

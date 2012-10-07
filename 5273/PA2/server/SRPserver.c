@@ -19,7 +19,7 @@
 #include <string.h> /* memset() */
 #include <stdlib.h>
 #include <time.h>
-#include "sendto_h"
+#include "../sendto_h"
 
 #define LOCAL_SERVER_PORT 50000
 
@@ -45,18 +45,20 @@ int main(int argc, char *argv[]) {
 	init_net_lib(atof(argv[1]), atoi(argv[2]));
 
 	/* socket creation */
-	sd=socket(***************************);
-	if(sd<0) {
+	if((sd=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0){
 		printf("%s: cannot open socket \n",argv[0]);
 		exit(1);
 	}
 
+
 	/* bind local server port.  Note the server port must be a
 	   "well-known" whose value is known by the client */
+	bzero(&servAddr,sizeof(servAddr));
 	servAddr.sin_family = AF_INET;
 	servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	servAddr.sin_port = htons(LOCAL_SERVER_PORT);
-	rc = bind (************************************************);
+
+	rc = bind(sd, (struct sockaddr *)&servAddr, sizeof(servAddr));
 	if(rc<0) {
 		printf("%s: cannot bind port number %d \n",argv[0], LOCAL_SERVER_PORT);
 		exit(1); 
