@@ -20,6 +20,33 @@
 #define REMOTE_SERVER_PORT 50000
 #define BUFSIZE 512
 
+void printHdr(SwpHdr *hdr){
+    printf("SeqNum %d AckNum %d Flags %d\n", hdr->SeqNum, hdr->AckNum, hdr->Flags);
+}
+
+void setSwpHdr(SwpHdr *targetHdr, SwpSeqno seq_num, SwpSeqno ack_num, u_char Flags){
+    targetHdr->SeqNum = seq_num;
+    targetHdr->AckNum = ack_num;
+    targetHdr->Flags = Flags;
+    printHdr(targetHdr);
+}
+
+void initializeState(SwpState *state){
+    //SwpSeqno LAR = -1; //ends up being 255
+    //SwpSeqno LFS = -1; //ends up being 255
+    state->LAR = -1;
+    state->LFS = -1;
+    sem_init(&state->sendWindowNotFull, 0, SWS); //set the semaphore to be the size of the SWS 
+    // SwpSeqno seq_num = 0;
+    // SwpSeqno ack_num = 0;
+    // SwpHdr = {seq_num, ack_num, 0};
+    setSwpHdr(&state->hdr, 0 , 0 , 0);
+    printf("state header\n");
+    printHdr(&state->hdr);
+}
+
+
+
 
 int main(int argc, char *argv[]) {
 typedef char * string;
@@ -34,22 +61,12 @@ typedef char * string;
     int fdmax;
     fd_set read_fds;  // temp file descriptor list for select()
 
-
-    SwpSeqno LAR = 0;
-    SwpSeqno LFS = 0;
-    sem_t semaphore;
-    sem_init(&semaphore, 0, SWS);
-    SwpSeqno seq_num = 0;
-    SwpSeqno ack_num = 0;
-    SwpHdr header = {seq_num, ack_num, 0};
-    struct timeval time;
-    gettimeofday(&time, NULL);
-    Msg clientMsg;
-
     static SwpState state;
-    state.LFS = LFS;
-    state.LAR = LAR;
-    
+    initializeState(&state);
+    SwpSeqno test = 0;
+    printf("%d\n",test);
+
+
     //check command line args.
     if(argc<6) {
 	printf("usage : %s <serve_ip_address> <error_rate> <random_seed> <send_file> <send_log> \n", argv[0]);
@@ -65,7 +82,7 @@ typedef char * string;
     /* Test printing to the client Log */
     int temp[] = {1,2,3,5};
     int size_of_temp = 4;
-    toLog(1, argv[5], "Send", seq_num, temp, size_of_temp, &state);
+    toLog(1, argv[5], "Send", state.hdr.SeqNum, temp, size_of_temp, &state);
 
     /* get server IP address (input must be IP address, not DNS name) */
 

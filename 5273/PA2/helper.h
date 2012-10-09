@@ -9,6 +9,8 @@ sem - points to a semaphore object to initialize
 pshared - is a flag indicating whether or not the semaphore should be shared with fork()ed processes. LinuxThreads does not currently support shared semaphores
 value - is an initial value to set the semaphore to*/
 
+//@@@ Header flag: 0 is for data, 1 is for ACK @@@@//
+
 #define SWS 1
 #define RWS 1
 
@@ -20,6 +22,9 @@ typedef struct {
   SwpSeqno AckNum; /* ack of received frame */
   u_char Flags; /* up to 8 bits worth of flags */
 } SwpHdr;
+
+
+
 
 typedef struct{
   /* sender side state */
@@ -33,7 +38,7 @@ typedef struct{
     Msg     msg;
   } sendQ[SWS];
   
-  struct timeval smallestTime; /* ticker of SWS with the least time left */
+  int smallestTime; /* ticker of SWS with the least time left */
 
   /* receiver side state*/
   SwpSeqno  NFE;      /* seqno of next frame expected */
@@ -45,4 +50,5 @@ typedef struct{
     Msg     msg;
   } recvQ[RWS];
 } SwpState;
+
 
