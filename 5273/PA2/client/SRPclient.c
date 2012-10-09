@@ -55,24 +55,24 @@ typedef char * string;
     struct sockaddr_in cliAddr, remoteServAddr; //Socker addresses for the client and remote
     unsigned int remote_length = sizeof(remoteServAddr); //Length of remote address struct
     int sd; //The socket that we will use
-    Msg receive_buffer; //The buffer we use to send our data it is 512 bytes long
+    Msg send_buffer; //The buffer we use to send our data it is 512 bytes long
     struct timeval default_timeout; //The default timeout we are using for the select()
     default_timeout.tv_sec = 2; //2 secs
     default_timeout.tv_usec = 500000; //0.5 secs
     fd_set read_fds;  // temp file descriptor list for select()
 
     //Initialize the state of the client
-    SwpSeqno receivedAcks[500];
+    SwpSeqno receivedAcks[500]; //(Non-optimal) implementation of the ACK list
     static SwpState state;
     initializeState(&state, receivedAcks);
 
 
-    //check command line args.
+    //Check command line args.
     if(argc<6) {
 	printf("usage : %s <serve_ip_address> <error_rate> <random_seed> <send_file> <send_log> \n", argv[0]);
 	exit(1);
     }
-
+    //Print error rate
     printf("error rate : %f\n",atof(argv[2]));
 
     /* Note: you must initialize the network library first before calling
@@ -80,24 +80,26 @@ typedef char * string;
     init_net_lib(atof(argv[2]), atoi(argv[3]));
 
     /* Test printing to the client Log */
-    int temp[] = {1,2,3,5};
+    /*int temp[] = {1,2,3,5};
     int size_of_temp = 4;
-    toLog(1, argv[5], "Send", state.hdr.SeqNum, temp, size_of_temp, &state);
+    toLog(1, argv[5], "Send", state.hdr.SeqNum, temp, size_of_temp, &state);*/
 
     /* get server IP address (input must be IP address, not DNS name) */
-
     printf("%s: sending data to '%s' \n", argv[0], argv[1]);
 
-    bzero(&remoteServAddr, sizeof(remoteServAddr));
-    remoteServAddr.sin_family = AF_INET;
-    remoteServAddr.sin_port = htons(REMOTE_SERVER_PORT);
+    //Set up the address of the remote server.
+    bzero(&remoteServAddr, sizeof(remoteServAddr)); //zero out the address
+    remoteServAddr.sin_family = AF_INET; //address family
+    remoteServAddr.sin_port = htons(REMOTE_SERVER_PORT); //Use the port we set up
 
+    //Convert the char string into an INET address structure
     int retVal;
     retVal = inet_pton(AF_INET, argv[1], &remoteServAddr.sin_addr);
     if(retVal == -1){
         printf("Invalid address family for IP address\n");
     }
 
+    //Same deal with our client address
     cliAddr.sin_family = AF_INET;
     cliAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     cliAddr.sin_port = htons(0);
@@ -108,6 +110,20 @@ typedef char * string;
 	printf("%s: cannot open socket \n",argv[0]);
 	exit(1);
     }
+
+    /*
+    Open up our send file to get it ready to packet-ize and send
+    */
+    FILE *fsend;
+    fsend = fopen(argv[4],"r"); //Open the filename we entered
+    if(fp == NULL){
+        printf("Please use an existing file to send\n");
+        printf("usage : %s <serve_ip_address> <error_rate> <random_seed> <send_file> <send_log> \n", argv[0]);
+        exit(1);
+    }
+    
+    /*testing semaphore*/
+
 
 
 /*
