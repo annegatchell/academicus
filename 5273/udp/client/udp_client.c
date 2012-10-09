@@ -232,7 +232,8 @@ int main (int argc, char * argv[])
 							}
 							else if(num_bytes_returned > 0)
 							{
-								if((nbytes = sendto(sock, file_buffer, sizeof(file_buffer), 0, (struct sockaddr *)&remote, remote_length)) == -1) 
+								if((nbytes = sendto(sock, file_buffer, sizeof(file_buffer), 0, 
+									(struct sockaddr *)&remote, remote_length)) == -1) 
 								{
 									printf("Client error on packet send\n");
 								}

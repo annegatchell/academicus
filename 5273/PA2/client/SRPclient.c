@@ -13,46 +13,143 @@
 #include <sys/time.h> /* select() */
 #include <signal.h>
 #include <unistd.h>
-#include "../sendto_.h"
+
+#include <sendto_.h>
+#include <helper.h>
 
 #define REMOTE_SERVER_PORT 50000
+#define BUFSIZE 512
 
-struct sockaddr_in cliAddr, remoteServAddr;
 
 int main(int argc, char *argv[]) {
+typedef char * string;
+
+    struct sockaddr_in cliAddr, remoteServAddr;
+    unsigned int remote_length = sizeof(remoteServAddr);
+    int sd;
+    Msg receive_buffer;
+    struct timeval default_timeout;
+    default_timeout.tv_sec = 2;
+    default_timeout.tv_usec = 500000;
+    int fdmax;
+    fd_set read_fds;  // temp file descriptor list for select()
+
+
+    SwpSeqno LAR = 0;
+    SwpSeqno LFS = 0;
+    sem_t semaphore;
+    sem_init(&semaphore, 0, SWS);
+    SwpSeqno seq_num = 0;
+    SwpSeqno ack_num = 0;
+    SwpHdr header = {seq_num, ack_num, 0};
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    Msg clientMsg;
+
+    static SwpState state;
+    state.LFS = LFS;
+    state.LAR = LAR;
     
     //check command line args.
     if(argc<6) {
-	printf("usage : %s <server> <error rate> <random seed> <send_file> <send_log> \n", argv[0]);
+	printf("usage : %s <serve_ip_address> <error_rate> <random_seed> <send_file> <send_log> \n", argv[0]);
 	exit(1);
     }
 
     printf("error rate : %f\n",atof(argv[2]));
 
     /* Note: you must initialize the network library first before calling
-       sendto_().  The arguments are the <errorrate> and <random seed> */
+       sendto_().  The arguments are the <error_rate> and <random_seed> */
     init_net_lib(atof(argv[2]), atoi(argv[3]));
+
+    /* Test printing to the client Log */
+    int temp[] = {1,2,3,5};
+    int size_of_temp = 4;
+    toLog(1, argv[5], "Send", seq_num, temp, size_of_temp, &state);
 
     /* get server IP address (input must be IP address, not DNS name) */
 
     printf("%s: sending data to '%s' \n", argv[0], argv[1]);
 
+    bzero(&remoteServAddr, sizeof(remoteServAddr));
     remoteServAddr.sin_family = AF_INET;
     remoteServAddr.sin_port = htons(REMOTE_SERVER_PORT);
-    inet_pton(AF_INET, argv[1], &remoteServAddr.sin_addr);
+
+    int retVal;
+    retVal = inet_pton(AF_INET, argv[1], &remoteServAddr.sin_addr);
+    if(retVal == -1){
+        printf("Invalid address family for IP address\n");
+    }
 
     cliAddr.sin_family = AF_INET;
     cliAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     cliAddr.sin_port = htons(0);
 
     /* socket creation */
-    sd = socket(************************);
+    sd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if(sd<0) {
 	printf("%s: cannot open socket \n",argv[0]);
 	exit(1);
     }
 
-    msg[] = "send this";
-    sendto_(sd,msg, strlen(msg),0, (struct sockaddr *) &remoteServAddr,
-	    sizeof(remoteServAddr));
+
+/*
+    int sendto_(int sockfd, const void *msg, int len, unsigned int flags,
+                const struct sockaddr *to, socklen_t tolen);
+*/
+
+    FD_ZERO(&read_fds);
+    FD_SET(sd, &read_fds);
+    int nbytes;
+    //sd; //Keep track of biggest file descriptor
+
+    //for(;;){
+    char msg[] = "send this";
+    char msg2[] = "send that";
+    string msgs[4];
+    msgs[0] = "0send this";
+    msgs[1] = "1send that";
+    msgs[2] = "2cat in ";
+    msgs[3] = "3hat";
+    int iter = 0;
+    while(iter < 4){
+        sendto_(sd, msgs[iter], strlen(msg),0, (struct sockaddr *) &remoteServAddr,
+            sizeof(remoteServAddr));
+
+        if (select(sd+1, &read_fds, NULL, NULL, &default_timeout) == -1) {
+            perror("select");
+            exit(4);
+        }
+
+        if (FD_ISSET(sd, &read_fds)){
+            printf("received packet!\n");
+            if ((nbytes = recv(sd, receive_buffer, sizeof(receive_buffer), 0)) <= 0) {
+                // got error or connection closed by client
+                if (nbytes == 0) {
+                // connection closed
+                    printf("selectserver: socket %d hung up\n", sd);
+                } else {
+                    perror("recv");
+                }
+            } else 
+            {
+                printf("%s\n", receive_buffer);
+                iter++;
+            }
+        }
+        else{
+            printf("Timed out. Resend\n");
+            //sendto_(sd, msgs[iter], strlen(msg),0, (struct sockaddr *) &remoteServAddr,
+            //sizeof(remoteServAddr));
+        }
+    }
+            
+
+        
+
+
+    //}
+
+
+    return 0;
 }

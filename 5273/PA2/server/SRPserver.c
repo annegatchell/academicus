@@ -19,7 +19,11 @@
 #include <string.h> /* memset() */
 #include <stdlib.h>
 #include <time.h>
-#include "../sendto_h"
+#include <ctype.h>
+
+#include <sendto_.h>
+#include <helper.h>
+
 
 #define LOCAL_SERVER_PORT 50000
 
@@ -28,13 +32,33 @@ int main(int argc, char *argv[]) {
 
 	struct sockaddr_in cliAddr, servAddr;
 	unsigned int cliLen;
+	int sd; //This is the socket
+	int rc; 
+	char recvmsg[100];
+	char buffer[100];
+	FILE *fout; //Output file
+
+    SwpSeqno LFR = 0;
+    SwpSeqno LAF = 0;
+    sem_t semaphore;
+    sem_init(&semaphore, 0, RWS);
+    SwpSeqno seq_num = 0;
+    SwpSeqno ack_num = 0;
+    SwpHdr header = {seq_num, ack_num, 0};
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    Msg clientMsg;
+
+    static SwpState state;
+    state.LFS = LFR;
+    state.LAR = LAF;
 
 	/* You should have some command-line processing that follows the format
 	   ./server_SRP <error_rate> <random_seed> <output_file> <receive_log>
 	   */
 
 	if(argc<5) {
-		printf("usage : %s <error rate> <random seed> <send_file> <send_log> \n", argv[0]);
+		printf("usage : %s <error_rate> <random_seed> <output_file> <receive_log> \n", argv[0]);
 		exit(1);
 	}
 	printf("error rate : %f\n",atof(argv[1]));
@@ -64,9 +88,54 @@ int main(int argc, char *argv[]) {
 		exit(1); 
 	}
 
-	printf("%s: waiting for data on port UDP %u\n",argv[0],LOCAL_SERVER_PORT);
-	char recvmsg[100];
-	int n = recvfrom(sd, &rcvmsg, sizeof (recvmsg), 0,
-			(struct sockaddr *) &cliAddr, &cliLen);
+	int received[100];
+	int received_ptr = 0;
+	int received_size = 100;
+	char temp;
+	char ack[4] = "ackl";
+	int t;
+	//Open the output file
+	char* filename = argv[3];
+	fout = fopen(filename, "a");
+	int iter = 0;
+	while(iter < 4){
+		printf("%s: waiting for data on port UDP %u\n",argv[0],LOCAL_SERVER_PORT);
+
+		int nbytes;
+		if((nbytes = recvfrom(sd, &buffer, sizeof (buffer), 0, 
+			(struct sockaddr *) &cliAddr, &cliLen)) == -1)
+		{printf("error on packet receive\n");}
+
+		printf("%s\n", buffer);
+
+		temp = buffer[0];
+		t = atoi(&temp);
+		printf("%c  %d\n", temp, t);
+		if(t == iter -1){
+			iter--;
+		}
+		if(t == iter){
+			received[received_ptr] = buffer[0];
+			ack[3] = buffer[0];
+			iter++;
+			char writeInfo[100];
+			printf("buffer size %ld \n", sizeof(buffer));
+			trimwhitespace(buffer, writeInfo,sizeof(buffer));
+			printf("trim %ld\n", sizeof(buffer));
+			int size_of_buffer = getSizeOfBuffer(writeInfo);
+			printf("size of buffer %d\n", size_of_buffer);
+			int num_of_bytes_written = fwrite(writeInfo,sizeof(char),size_of_buffer,fout);
+
+			sendto_(sd, ack, strlen(ack), 0, (struct sockaddr *) &cliAddr,
+            	sizeof(cliAddr));
+		}
+
+		toLog(0, argv[4], "Receive", seq_num, received, received_size, &state);
+
+		
+	}
+
+	return 0;
+
 }
 
