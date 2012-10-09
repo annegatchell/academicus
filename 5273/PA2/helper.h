@@ -39,6 +39,7 @@ typedef struct{
   } sendQ[SWS];
   
   int smallestTime; /* ticker of SWS with the least time left */
+  SwpSeqno * receivedACK_ptr; /*pointer to the array of received acks */
 
   /* receiver side state*/
   SwpSeqno  NFE;      /* seqno of next frame expected */

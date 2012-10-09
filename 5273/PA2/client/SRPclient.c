@@ -20,10 +20,16 @@
 #define REMOTE_SERVER_PORT 50000
 #define BUFSIZE 512
 
+/*
+Prints the given swphdr
+*/
 void printHdr(SwpHdr *hdr){
     printf("SeqNum %d AckNum %d Flags %d\n", hdr->SeqNum, hdr->AckNum, hdr->Flags);
 }
 
+/*
+Sets a SwpHdr to the given values. Takes the SwpHdr as a pointer.
+*/
 void setSwpHdr(SwpHdr *targetHdr, SwpSeqno seq_num, SwpSeqno ack_num, u_char Flags){
     targetHdr->SeqNum = seq_num;
     targetHdr->AckNum = ack_num;
@@ -31,40 +37,34 @@ void setSwpHdr(SwpHdr *targetHdr, SwpSeqno seq_num, SwpSeqno ack_num, u_char Fla
     printHdr(targetHdr);
 }
 
-void initializeState(SwpState *state){
-    //SwpSeqno LAR = -1; //ends up being 255
-    //SwpSeqno LFS = -1; //ends up being 255
-    state->LAR = -1;
-    state->LFS = -1;
+/*
+Initializes the state for the client side. Takes a pointer ot the state and a pointer
+to the array of received acks.
+*/
+void initializeState(SwpState *state, SwpSeqno *seqno_pter){
+    state->LAR = -1; //Ends up being 255
+    state->LFS = -1; //Ends up being 255
     sem_init(&state->sendWindowNotFull, 0, SWS); //set the semaphore to be the size of the SWS 
-    // SwpSeqno seq_num = 0;
-    // SwpSeqno ack_num = 0;
-    // SwpHdr = {seq_num, ack_num, 0};
     setSwpHdr(&state->hdr, 0 , 0 , 0);
-    printf("state header\n");
-    printHdr(&state->hdr);
+    state->receivedACK_ptr = seqno_pter;
 }
-
-
-
 
 int main(int argc, char *argv[]) {
 typedef char * string;
 
-    struct sockaddr_in cliAddr, remoteServAddr;
-    unsigned int remote_length = sizeof(remoteServAddr);
-    int sd;
-    Msg receive_buffer;
-    struct timeval default_timeout;
-    default_timeout.tv_sec = 2;
-    default_timeout.tv_usec = 500000;
-    int fdmax;
+    struct sockaddr_in cliAddr, remoteServAddr; //Socker addresses for the client and remote
+    unsigned int remote_length = sizeof(remoteServAddr); //Length of remote address struct
+    int sd; //The socket that we will use
+    Msg receive_buffer; //The buffer we use to send our data it is 512 bytes long
+    struct timeval default_timeout; //The default timeout we are using for the select()
+    default_timeout.tv_sec = 2; //2 secs
+    default_timeout.tv_usec = 500000; //0.5 secs
     fd_set read_fds;  // temp file descriptor list for select()
 
+    //Initialize the state of the client
+    SwpSeqno receivedAcks[500];
     static SwpState state;
-    initializeState(&state);
-    SwpSeqno test = 0;
-    printf("%d\n",test);
+    initializeState(&state, receivedAcks);
 
 
     //check command line args.
