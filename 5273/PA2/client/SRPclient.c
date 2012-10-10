@@ -61,7 +61,8 @@ void deepCopyArray(Msg *from, Msg *to){
 }
 
 int sendNewFrame(SwpState *state, Msg *frame, char isSelectRunning, int sd, 
-                    fd_set *read_fds, struct timeval *default_timeout){
+                    fd_set *read_fds, struct timeval *default_timeout, 
+                    struct sockaddr_in *remoteServAddr, int sizeAddr){
     struct sendQ_slot *slot;
 
     state->hdr.SeqNum = ++state->LFS;
@@ -77,12 +78,21 @@ int sendNewFrame(SwpState *state, Msg *frame, char isSelectRunning, int sd,
     slot->acked = 0;
     printf("%d %d %d %c\n", slot->msg.m[0], slot->msg.m[1], slot->msg.m[2], slot->msg.m[3]);
     slot->timeout = time(NULL);
+    //Send the frame;
+    if(sendto_(sd, frame->m, sizeof(frame->m),0, (struct sockaddr *) remoteServAddr,
+                sizeAddr) < 0)
+    {
+        printf("EROROROEOs\n");
+    }
+    //Start select;
     if(!isSelectRunning){
         if (select(sd+1, read_fds, NULL, NULL, default_timeout) == -1) {
             perror("select");
             exit(4);
         }
     }
+    return 3;//sendto_(sd, frame->m, sizeof(frame->m),0, (struct sockaddr *) remoteServAddr,
+            //sizeof(remoteServAddr));
 }
 
 int main(int argc, char *argv[]) {
@@ -173,42 +183,50 @@ typedef char * string;
     // do{
         //size_t fread(void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);
         printf("size of reading%ld\n",sizeof(Msg)-3*sizeof(char));
-        if((nbytes = fread(&frame.m[3],sizeof(char),
-            sizeof(frame.m)-3*sizeof(u_char),fsend))== -1){
+        //Read a frame's worht of the file.
+        if((nbytes = fread(&frame.m[3],sizeof(char),sizeof(frame.m)-3*sizeof(u_char),
+                            fsend))== -1){
             printf("Error Reading File, Try again...\n");
             // break;
         }
+        //If the file is done being read
         else if (nbytes == 0){
             doneReadingFile = 1;
             lastSeqNum = state.hdr.SeqNum;
         }
+        //If there was something to read!
         else{
             printf("positions 4 5 6 %c %c %c\n",frame.m[3], frame.m[4],frame.m[5]);
-            if(sendNewFrame(&state, &frame, isSelectRunning, 
-                            sd,&read_fds, &default_timeout) < 0){
+            if(sendNewFrame(&state, &frame, isSelectRunning, sd,&read_fds, 
+                            &default_timeout,&remoteServAddr,sizeof(remoteServAddr)) < 0){
                printf("Error on packet send\n");
             }
-        }
+            // if(sendto_(sd, frame.m, sizeof(frame.m),0, (struct sockaddr *) &remoteServAddr,
+            //     sizeof(remoteServAddr)) < 0)
+            // {
+            //     printf("EROROROEOs\n");
+            // }
           
-        if (FD_ISSET(sd, &read_fds)){
-            printf("received packet!\n");
-            if ((nbytes = recv(sd, receive_buffer.m, sizeof(receive_buffer.m), 0)) <= 0) {
-                // got error or connection closed by client
-                if (nbytes == 0) {
-                // connection closed
-                    printf("selectserver: socket %d hung up\n", sd);
-                } else {
-                    perror("recv");
+            if (FD_ISSET(sd, &read_fds)){
+                printf("received packet!\n");
+                if ((nbytes = recv(sd, receive_buffer.m, sizeof(receive_buffer.m), 0)) <= 0) {
+                    // got error or connection closed by client
+                    if (nbytes == 0) {
+                    // connection closed
+                        printf("selectserver: socket %d hung up\n", sd);
+                    } else {
+                        perror("recv");
+                    }
+                } else 
+                {
+                    printf("%s\n", receive_buffer.m);
                 }
-            } else 
-            {
-                printf("%s\n", receive_buffer.m);
             }
-        }
-        else{
-            printf("Timed out. Resend\n");
-            //sendto_(sd, msgs[iter], strlen(msg),0, (struct sockaddr *) &remoteServAddr,
-            //sizeof(remoteServAddr));
+            else{
+                printf("Timed out. Resend\n");
+                //sendto_(sd, msgs[iter], strlen(msg),0, (struct sockaddr *) &remoteServAddr,
+                //sizeof(remoteServAddr));
+            }
         }
         
 

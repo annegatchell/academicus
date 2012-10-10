@@ -36,6 +36,7 @@ int main(int argc, char *argv[]) {
 	int rc; 
 	char recvmsg[100];
 	char buffer[100];
+	Msg receiveBuf;
 	FILE *fout; //Output file
 
     SwpSeqno LFR = 0;
@@ -97,6 +98,27 @@ int main(int argc, char *argv[]) {
 	//Open the output file
 	char* filename = argv[3];
 	fout = fopen(filename, "a");
+
+	printf("%s: waiting for data on port UDP %u\n",argv[0],LOCAL_SERVER_PORT);
+	int nbytes;
+	if((nbytes = recvfrom(sd, &receiveBuf.m, sizeof(receiveBuf.m), 0, 
+		(struct sockaddr *) &cliAddr, &cliLen)) == -1)
+	{printf("error on packet receive\n");}
+
+	
+	printf("%d %d %d %c\n", receiveBuf.m[0], receiveBuf.m[1], receiveBuf.m[2], receiveBuf.m[3]);
+
+	temp = receiveBuf.m[0];
+	printf("%c\n", temp);
+
+	if(sendto_(sd, ack, strlen(ack), 0, (struct sockaddr *) &cliAddr,
+    	sizeof(cliAddr)) == -1){
+		printf("ACK send error\n");
+	}
+	int num_of_bytes_written = fwrite(receiveBuf.m,sizeof(char),sizeof(receiveBuf.m),fout);
+	
+
+/*
 	int iter = 0;
 	while(iter < 4){
 		printf("%s: waiting for data on port UDP %u\n",argv[0],LOCAL_SERVER_PORT);
@@ -106,7 +128,8 @@ int main(int argc, char *argv[]) {
 			(struct sockaddr *) &cliAddr, &cliLen)) == -1)
 		{printf("error on packet receive\n");}
 
-		printf("%s\n", buffer);
+		//printf("%d %d %d %c\n", frame->m[0], frame->m[1], frame->m[2], frame->m[3]);
+
 
 		temp = buffer[0];
 		t = atoi(&temp);
@@ -130,10 +153,9 @@ int main(int argc, char *argv[]) {
             	sizeof(cliAddr));
 		}
 
-		toLog(0, argv[4], "Receive", seq_num, received, received_size, &state);
-
-		
+		toLog(0, argv[4], "Receive", seq_num, received, received_size, &state);	
 	}
+*/
 
 	return 0;
 
