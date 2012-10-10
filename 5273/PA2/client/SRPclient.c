@@ -52,10 +52,16 @@ void initializeState(SwpState *state, SwpSeqno *seqno_pter){
 }
 
 int sendNewFrame(SwpState *state, Msg *frame){
+    struct sendQ_slot *slot;
+
     state->hdr.SeqNum = ++state->LFS;
+    slot = &state->sendQ[state->hdr.SeqNum%SWS];
+    state->hdr.Flags = 0;
     --state->newSend;
-
-
+    frame->m[0] = state->hdr.SeqNum;
+    frame->m[1] = state->hdr.AckNum;
+    frame->m[2] = state->hdr.Flags;
+    printf("%d %d %d %c\n", frame->m[0], frame->m[1], frame->m[2], frame->m[3]);
 
 }
 
@@ -143,18 +149,20 @@ typedef char * string;
     Start the loop for sliding window.
     Stop conditions are that the whole file has been read and the LAR == LFS
     */
-    do{
+    // do{
         //size_t fread(void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);
-        if((nbytes = fread(&frame[3],sizeof(char),
-            sizeof(Msg)-3*sizeof(char),fsend))== -1){
+        printf("size of reading%ld\n",sizeof(Msg)-3*sizeof(char));
+        if((nbytes = fread(&frame.m[3],sizeof(char),
+            sizeof(frame.m)-3*sizeof(u_char),fsend))== -1){
             printf("Error Reading File, Try again...\n");
-            break;
+            // break;
         }
         else if (nbytes == 0){
             doneReadingFile = 1;
             lastSeqNum = state.hdr.SeqNum;
         }
         else{
+            printf("positions 4 5 6 %c %c %c\n",frame.m[3], frame.m[4],frame.m[5]);
             if(sendNewFrame(&state, &frame) < 0){
                printf("Error on packet send\n");
             }
@@ -164,7 +172,7 @@ typedef char * string;
         
 
 
-    }while(!doneReadingFile && state.LAR != state.LFS);
+    // }while(!doneReadingFile && state.LAR != state.LFS);
     fclose(fsend);
 
 

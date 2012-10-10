@@ -15,7 +15,7 @@ value - is an initial value to set the semaphore to*/
 #define RWS 1
 
 typedef u_char SwpSeqno;
-typedef char Msg[512];
+typedef struct Msg {u_char m[512];} Msg;
 
 typedef struct {
   SwpSeqno SeqNum; /*sequence number of this frame */
