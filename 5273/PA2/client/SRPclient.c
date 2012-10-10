@@ -21,6 +21,7 @@
 #define REMOTE_SERVER_PORT 50000
 #define BUFSIZE 512
 
+
 /*
 Prints the given swphdr
 */
@@ -59,7 +60,8 @@ void deepCopyArray(Msg *from, Msg *to){
     }
 }
 
-int sendNewFrame(SwpState *state, Msg *frame){
+int sendNewFrame(SwpState *state, Msg *frame, char isSelectRunning, int sd, 
+                    fd_set *read_fds, struct timeval *default_timeout){
     struct sendQ_slot *slot;
 
     state->hdr.SeqNum = ++state->LFS;
@@ -72,8 +74,15 @@ int sendNewFrame(SwpState *state, Msg *frame){
     printf("%d %d %d %c\n", frame->m[0], frame->m[1], frame->m[2], frame->m[3]);
     printf("%ld\n", sizeof(frame->m));
     deepCopyArray(frame,&slot->msg); 
+    slot->acked = 0;
     printf("%d %d %d %c\n", slot->msg.m[0], slot->msg.m[1], slot->msg.m[2], slot->msg.m[3]);
-    
+    slot->timeout = time(NULL);
+    if(!isSelectRunning){
+        if (select(sd+1, read_fds, NULL, NULL, default_timeout) == -1) {
+            perror("select");
+            exit(4);
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -153,9 +162,10 @@ typedef char * string;
     FD_ZERO(&read_fds); //clear the select set
     FD_SET(sd, &read_fds); //add socket to the listening list
     int nbytes;
-    int doneReadingFile = 0; //Flag to tell us if we are done reading the file
-    int lastSeqNum = -1; //What is the last sequence number?
+    char doneReadingFile = 0; //Flag to tell us if we are done reading the file
+    SwpSeqno lastSeqNum = -1; //What is the last sequence number?
     Msg frame;
+    char isSelectRunning = 0;
     /*
     Start the loop for sliding window.
     Stop conditions are that the whole file has been read and the LAR == LFS
@@ -174,12 +184,32 @@ typedef char * string;
         }
         else{
             printf("positions 4 5 6 %c %c %c\n",frame.m[3], frame.m[4],frame.m[5]);
-            if(sendNewFrame(&state, &frame) < 0){
+            if(sendNewFrame(&state, &frame, isSelectRunning, 
+                            sd,&read_fds, &default_timeout) < 0){
                printf("Error on packet send\n");
             }
         }
           
-    
+        if (FD_ISSET(sd, &read_fds)){
+            printf("received packet!\n");
+            if ((nbytes = recv(sd, receive_buffer.m, sizeof(receive_buffer.m), 0)) <= 0) {
+                // got error or connection closed by client
+                if (nbytes == 0) {
+                // connection closed
+                    printf("selectserver: socket %d hung up\n", sd);
+                } else {
+                    perror("recv");
+                }
+            } else 
+            {
+                printf("%s\n", receive_buffer.m);
+            }
+        }
+        else{
+            printf("Timed out. Resend\n");
+            //sendto_(sd, msgs[iter], strlen(msg),0, (struct sockaddr *) &remoteServAddr,
+            //sizeof(remoteServAddr));
+        }
         
 
 

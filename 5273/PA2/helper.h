@@ -35,7 +35,7 @@ typedef struct{
   SwpHdr    hdr;      /*pre-initialized header*/
   
   struct sendQ_slot{
-    struct timeval timeout;  /*event associated with send timeout*/
+    time_t timeout;  /*event associated with send timeout*/
     char    acked; //Has this slot been acked already? 0 is false, 1 is true
     Msg     msg;
   } sendQ[SWS];
