@@ -51,6 +51,14 @@ void initializeState(SwpState *state, SwpSeqno *seqno_pter){
     state->newSend = SWS;
 }
 
+void deepCopyArray(Msg *from, Msg *to){
+    int i;
+    for(i = 0; i < sizeof(from->m);i++)
+    {
+        to->m[i] = from->m[i];
+    }
+}
+
 int sendNewFrame(SwpState *state, Msg *frame){
     struct sendQ_slot *slot;
 
@@ -62,7 +70,10 @@ int sendNewFrame(SwpState *state, Msg *frame){
     frame->m[1] = state->hdr.AckNum;
     frame->m[2] = state->hdr.Flags;
     printf("%d %d %d %c\n", frame->m[0], frame->m[1], frame->m[2], frame->m[3]);
-
+    printf("%ld\n", sizeof(frame->m));
+    deepCopyArray(frame,&slot->msg); 
+    printf("%d %d %d %c\n", slot->msg.m[0], slot->msg.m[1], slot->msg.m[2], slot->msg.m[3]);
+    
 }
 
 int main(int argc, char *argv[]) {
