@@ -31,10 +31,12 @@ typedef struct{
   SwpSeqno  LAR;      /*seqno of last ACK*/
   SwpSeqno  LFS;      /*last frame sent*/
   sem_t sendWindowNotFull;
+  int       newSend;
   SwpHdr    hdr;      /*pre-initialized header*/
   
   struct sendQ_slot{
     struct timeval timeout;  /*event associated with send timeout*/
+    char    acked; //Has this slot been acked already? 0 is false, 1 is true
     Msg     msg;
   } sendQ[SWS];
   

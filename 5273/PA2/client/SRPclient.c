@@ -13,6 +13,7 @@
 #include <sys/time.h> /* select() */
 #include <signal.h>
 #include <unistd.h>
+#include <semaphore.h>
 
 #include <sendto_.h>
 #include <helper.h>
@@ -47,6 +48,15 @@ void initializeState(SwpState *state, SwpSeqno *seqno_pter){
     sem_init(&state->sendWindowNotFull, 0, SWS); //set the semaphore to be the size of the SWS 
     setSwpHdr(&state->hdr, 0 , 0 , 0);
     state->receivedACK_ptr = seqno_pter;
+    state->newSend = SWS;
+}
+
+int sendNewFrame(SwpState *state, Msg *frame){
+    state->hdr.SeqNum = ++state->LFS;
+    --state->newSend;
+
+
+
 }
 
 int main(int argc, char *argv[]) {
@@ -55,7 +65,7 @@ typedef char * string;
     struct sockaddr_in cliAddr, remoteServAddr; //Socker addresses for the client and remote
     unsigned int remote_length = sizeof(remoteServAddr); //Length of remote address struct
     int sd; //The socket that we will use
-    Msg send_buffer; //The buffer we use to send our data it is 512 bytes long
+    Msg receive_buffer; //The buffer that receives acks. 512 bytes long
     struct timeval default_timeout; //The default timeout we are using for the select()
     default_timeout.tv_sec = 2; //2 secs
     default_timeout.tv_usec = 500000; //0.5 secs
@@ -116,21 +126,53 @@ typedef char * string;
     */
     FILE *fsend;
     fsend = fopen(argv[4],"r"); //Open the filename we entered
-    if(fp == NULL){
+    if(fsend == NULL){
         printf("Please use an existing file to send\n");
         printf("usage : %s <serve_ip_address> <error_rate> <random_seed> <send_file> <send_log> \n", argv[0]);
         exit(1);
     }
     
-    /*testing semaphore*/
+    //Prep for the send loop
+    FD_ZERO(&read_fds); //clear the select set
+    FD_SET(sd, &read_fds); //add socket to the listening list
+    int nbytes;
+    int doneReadingFile = 0; //Flag to tell us if we are done reading the file
+    int lastSeqNum = -1; //What is the last sequence number?
+    Msg frame;
+    /*
+    Start the loop for sliding window.
+    Stop conditions are that the whole file has been read and the LAR == LFS
+    */
+    do{
+        //size_t fread(void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);
+        if((nbytes = fread(&frame[3],sizeof(char),
+            sizeof(Msg)-3*sizeof(char),fsend))== -1){
+            printf("Error Reading File, Try again...\n");
+            break;
+        }
+        else if (nbytes == 0){
+            doneReadingFile = 1;
+            lastSeqNum = state.hdr.SeqNum;
+        }
+        else{
+            if(sendNewFrame(&state, &frame) < 0){
+               printf("Error on packet send\n");
+            }
+        }
+          
+    
+        
 
+
+    }while(!doneReadingFile && state.LAR != state.LFS);
+    fclose(fsend);
 
 
 /*
     int sendto_(int sockfd, const void *msg, int len, unsigned int flags,
                 const struct sockaddr *to, socklen_t tolen);
 */
-
+/*
     FD_ZERO(&read_fds);
     FD_SET(sd, &read_fds);
     int nbytes;
@@ -177,7 +219,7 @@ typedef char * string;
         }
     }
             
-
+*/
         
 
 
