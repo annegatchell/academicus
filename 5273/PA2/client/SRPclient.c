@@ -22,6 +22,7 @@
 #define BUFSIZE 512
 
 
+
 /*
 Prints the given swphdr
 */
@@ -44,12 +45,20 @@ Initializes the state for the client side. Takes a pointer ot the state and a po
 to the array of received acks.
 */
 void initializeState(SwpState *state, SwpSeqno *seqno_pter){
+    struct timeval void_timeout;
+    void_timeout.tv_sec = 2147483647;
+    void_timeout.tv_usec = 2147483647;
+
     state->LAR = -1; //Ends up being 255
     state->LFS = -1; //Ends up being 255
     sem_init(&state->sendWindowNotFull, 0, SWS); //set the semaphore to be the size of the SWS 
     setSwpHdr(&state->hdr, 0 , 0 , 0); //Flag = 0 when data, 1 when ack
     state->receivedACK_ptr = seqno_pter;
     state->newSend = SWS;
+    int i;
+    for(i = 0; i < SWS; i++){
+        state->sendQ[i].timeout = void_timeout;
+    }
 }
 
 
@@ -59,6 +68,11 @@ int sendNewFrame(SwpState *state, Msg *frame, char isSelectRunning, int sd,
                     struct sockaddr_in *remoteServAddr, int sizeAddr){
     struct sendQ_slot *slot;
 
+    struct timeval void_timeout;
+    void_timeout.tv_sec = 2147483647;
+    void_timeout.tv_usec = 2147483647;
+
+
     state->hdr.SeqNum = ++state->LFS;
     slot = &state->sendQ[state->hdr.SeqNum%SWS];
     state->hdr.Flags = 0;
@@ -67,19 +81,29 @@ int sendNewFrame(SwpState *state, Msg *frame, char isSelectRunning, int sd,
     frame->m[1] = state->hdr.AckNum;
     frame->m[2] = state->hdr.Flags;
     printf("%d %d %d %c\n", frame->m[0], frame->m[1], frame->m[2], frame->m[3]);
-    printf("%ld\n", sizeof(frame->m));
+    //printf("%ld\n", sizeof(frame->m));
     deepCopyArray(frame,&slot->msg); 
     slot->acked = 0;
     printf("%d %d %d %c\n", slot->msg.m[0], slot->msg.m[1], slot->msg.m[2], slot->msg.m[3]);
-    slot->timeout = time(NULL);
+    gettimeofday(&slot->timeout, NULL);
     //Send the frame;
-    if(sendto_(sd, frame->m, sizeof(frame->m),0, (struct sockaddr *) remoteServAddr,
+    if(sendto_(sd, slot->msg.m, sizeof(slot->msg.m),0, (struct sockaddr *) remoteServAddr,
                 sizeAddr) < 0)
     {
         printf("EROROROEOs\n");
     }
-    //Start select;
-    if(!isSelectRunning){
+    // //Start select;
+    // int noSelects = 1;
+    // int i;
+    // for(i=0;i<SWS;i++){
+    //     if(state->sendQ[i].timeout.tv_sec != void_timeout.tv_sec){
+    //         noSelects = 0;
+    //         break;
+    //     }
+    // }
+    if(frame->m[0] == 0){
+        FD_ZERO(read_fds); //clear the select set
+        FD_SET(sd, read_fds); //add socket to the listening list
         if (select(sd+1, read_fds, NULL, NULL, default_timeout) == -1) {
             perror("select");
             exit(4);
@@ -95,7 +119,7 @@ typedef char * string;
     struct sockaddr_in cliAddr, remoteServAddr; //Socker addresses for the client and remote
     unsigned int remote_length = sizeof(remoteServAddr); //Length of remote address struct
     int sd; //The socket that we will use
-    Msg receive_buffer; //The buffer that receives acks. 512 bytes long
+    u_char receive_buffer[3]; //The buffer that receives acks. 512 bytes long
     struct timeval default_timeout; //The default timeout we are using for the select()
     default_timeout.tv_sec = 2; //2 secs
     default_timeout.tv_usec = 500000; //0.5 secs
@@ -170,13 +194,21 @@ typedef char * string;
     SwpSeqno lastSeqNum = -1; //What is the last sequence number?
     Msg frame;
     char isSelectRunning = 0;
+    struct timeval new_timeout; //The default timeout we are using for the select()
+    new_timeout.tv_sec = 2; //2 secs
+    new_timeout.tv_usec = 500000; //0.5 secs
+    struct timeval void_timeout;
+    void_timeout.tv_sec = 2147483647;
+    void_timeout.tv_usec = 2147483647;
+    struct recvQ_slot *rslot;
     /*
     Start the loop for sliding window.
     Stop conditions are that the whole file has been read and the LAR == LFS
     */
-    // do{
+    int count = 0;
+    do{
         //size_t fread(void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);
-        printf("size of reading%ld\n",sizeof(Msg)-3*sizeof(char));
+        //printf("size of reading%ld\n",sizeof(Msg)-3*sizeof(char));
         //Read a frame's worht of the file.
         if((nbytes = fread(&frame.m[3],sizeof(char),sizeof(frame.m)-3*sizeof(u_char),
                             fsend))== -1){
@@ -190,7 +222,7 @@ typedef char * string;
         }
         //If there was something to read!
         else{
-            printf("positions 4 5 6 %c %c %c\n",frame.m[3], frame.m[4],frame.m[5]);
+            //printf("positions 4 5 6 %c %c %c\n",frame.m[3], frame.m[4],frame.m[5]);
             if(sendNewFrame(&state, &frame, isSelectRunning, sd,&read_fds, 
                             &default_timeout,&remoteServAddr,sizeof(remoteServAddr)) < 0){
                printf("Error on packet send\n");
@@ -203,7 +235,7 @@ typedef char * string;
           
             if (FD_ISSET(sd, &read_fds)){
                 printf("received packet!\n");
-                if ((nbytes = recv(sd, receive_buffer.m, sizeof(receive_buffer.m), 0)) <= 0) {
+                if ((nbytes = recv(sd, &receive_buffer, sizeof(receive_buffer), 0)) <= 0) {
                     // got error or connection closed by client
                     if (nbytes == 0) {
                     // connection closed
@@ -212,20 +244,108 @@ typedef char * string;
                         perror("recv");
                     }
                 } else 
-                {
-                    printf("%s\n", receive_buffer.m);
+                {//Got an ACK
+                    printf("got %d\n", receive_buffer[1]);
+                    SwpSeqno ack = receive_buffer[1];
+                    if(ack == state.LAR +1){
+                        state.sendQ[ack%SWS].timeout = void_timeout;
+                        struct timeval *least = &state.sendQ[0].timeout;
+                        struct timeval *temp;
+                        int i;
+                        for(i = 0;i < SWS;i++){
+                            temp = &state.sendQ[0].timeout;
+                            if((least->tv_sec * 1000000 + least->tv_usec) > 
+                                (temp->tv_sec * 1000000 + temp->tv_usec)){
+                                least = temp;
+                            }
+                        }
+                        FD_ZERO(&read_fds); //clear the select set
+                        FD_SET(sd, &read_fds); //add socket to the listening list
+                        if (select(sd+1, &read_fds, NULL, NULL, least) == -1) {
+                            perror("select");
+                            exit(4);
+                        }
+                        ++state.newSend;
+                        ++state.LAR;
+                        ++state.LFS;
+                        state.sendQ[ack%RWS].acked = 0;
+                        while(state.sendQ[(state.LFS+1)%RWS].acked){
+                            ++state.newSend;
+                            ++state.LAR;
+                            ++state.LFS;
+                            state.sendQ[ack%RWS].acked = 0;   
+                        }
+                    }
+                    else if(ack > state.LFS && ack < state.LAR){
+                        state.sendQ[ack%SWS].timeout = void_timeout;
+                        struct timeval *least = &state.sendQ[0].timeout;
+                        struct timeval *temp;
+                        int i;
+                        for(i = 0;i < SWS;i++){
+                            temp = &state.sendQ[0].timeout;
+                            if((least->tv_sec * 1000000 + least->tv_usec) > 
+                                (temp->tv_sec * 1000000 + temp->tv_usec)){
+                                least = temp;
+                            }
+                        }
+                        FD_ZERO(&read_fds); //clear the select set
+                        FD_SET(sd, &read_fds); //add socket to the listening list
+                        if (select(sd+1, &read_fds, NULL, NULL, least) == -1) {
+                            perror("select");
+                            exit(4);
+                        }
+                        state.sendQ[ack%RWS].acked = 1;
+                    }
                 }
             }
             else{
                 printf("Timed out. Resend\n");
+                SwpSeqno done;
+                int i;
+                struct timeval *temp;
+                struct timeval *least = &state.sendQ[0].timeout;
+                //Find which packet must be resent.
+                for(i = 0;i < SWS;i++){
+                    temp = &state.sendQ[0].timeout;
+                    if((temp->tv_sec * 1000000 + temp->tv_usec) >= 0)
+                    {
+                        done = state.sendQ[i].msg.m[0];
+                        gettimeofday(&state.sendQ[i].timeout, NULL);
+                        //Ressend the frame;
+                        if(sendto_(sd, state.sendQ[i].msg.m, sizeof(state.sendQ[i].msg.m),0, 
+                            (struct sockaddr *) &remoteServAddr, sizeof(remoteServAddr)) < 0){
+                            printf("EROROROEOs\n");
+                        }
+                    }
+                }
+
+                //Redo select
+                for(i = 0;i < SWS;i++){
+                    temp = &state.sendQ[0].timeout;
+                    if((least->tv_sec * 1000000 + least->tv_usec) > 
+                        (temp->tv_sec * 1000000 + temp->tv_usec)){
+                        least = temp;
+                    }
+                }
+                FD_ZERO(&read_fds); //clear the select set
+                FD_SET(sd, &read_fds); //add socket to the listening list
+                new_timeout.tv_sec = (int)least->tv_sec; //2 secs
+                printf("%d\n", least->tv_sec);
+                new_timeout.tv_usec = (int)least->tv_usec; 
+                if (select(sd+1, &read_fds, NULL, NULL, &default_timeout) == -1) {
+                    perror("select");
+                    exit(4);
+                }
+
+
                 //sendto_(sd, msgs[iter], strlen(msg),0, (struct sockaddr *) &remoteServAddr,
                 //sizeof(remoteServAddr));
             }
         }
         
+        count++;
 
-
-    // }while(!doneReadingFile && state.LAR != state.LFS);
+    }while(!doneReadingFile && state.LAR != state.LFS);
     fclose(fsend);
 
 

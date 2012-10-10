@@ -21,11 +21,8 @@ typedef struct Data {u_char d[509];} Data;
 typedef struct {
   SwpSeqno SeqNum; /*sequence number of this frame */
   SwpSeqno AckNum; /* ack of received frame */
-  u_char Flags; /* up to 8 bits worth of flags 0 when data, 1 when ACK*/
+  u_char Flags; /* up to 8 bits worth of flags 0 when data, 1 when ACKR*/
 } SwpHdr;
-
-
-
 
 typedef struct{
   /* sender side state */
@@ -36,7 +33,7 @@ typedef struct{
   SwpHdr    hdr;      /*pre-initialized header*/
   
   struct sendQ_slot{
-    time_t timeout;  /*event associated with send timeout*/
+    struct timeval timeout;  /*event associated with send timeout*/
     char    acked; //Has this slot been acked already? 0 is false, 1 is true
     Msg     msg;
   } sendQ[SWS];

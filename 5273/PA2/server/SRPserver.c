@@ -72,19 +72,19 @@ int receiveMsg(SwpState *state, Msg *frame, FILE *fout, int sd,
 	setSwpHdr(&header, seq_num,ack_num,flag);
 	//SwpHdr ack;
 	//setSwpHdr(&ack,0,seq_num, 1); //Prepare ack for sending
-	char ack[3];
+	u_char ack[3];
 	ack[0] = 0;
 	ack[1] = seq_num;
 	ack[2] = 1;
 	//Send the ack no matter what packet it is.
 	if(sendto_(sd, ack, sizeof(ack), 0, (struct sockaddr *) cliAddr, sizeAddr) == -1)
 		{printf("ACK send error\n");}
-	printf("%d %d %d %c\n", frame->m[0], frame->m[1], frame->m[2], frame->m[3]);
+	//printf("%d %d %d %c\n", frame->m[0], frame->m[1], frame->m[2], frame->m[3]);
 	u_char mischiefChar = -1; //From the wraparound.
 	printf("LAF %d LFR %d Seqno %d\n",state->LAF, state->LFR%mischiefChar, seq_num);
 	//If the packet is in the window and has not been already received.
 	if(seq_num < state->LAF && seq_num >= state->LFR%mischiefChar ){
-		
+
 		slot = &state->recvQ[header.SeqNum % RWS];
 		deepCopyArrayShorter(frame,&slot->data); //save copy in slot
 		slot->seqno = seq_num; //make note of seqnum
@@ -96,6 +96,8 @@ int receiveMsg(SwpState *state, Msg *frame, FILE *fout, int sd,
 			int num_of_bytes_written = fwrite(slot->data.d,sizeof(char),
 												sizeof(slot->data.d),fout);
 			slot->valid= 0;
+			*state->receivedPCKT_ptr = state->NFE;
+			++state->receivedPCKT_ptr;
 			++state->NFE;
 			++state->LFR;
 			++state->LAF;
@@ -109,13 +111,13 @@ int receiveMsg(SwpState *state, Msg *frame, FILE *fout, int sd,
 				++state->LAF;
 			}
 		}
-
+		return 1;
 	}
 	else{
 		//Packet wasn't in window so we drop it.
 		return -1;
 	}
-	printf("%c %c %c %c\n", slot->data.d[0], slot->data.d[1], slot->data.d[2], slot->data.d[3]);
+	 
 }
 
 int main(int argc, char *argv[]) {
@@ -177,16 +179,20 @@ int main(int argc, char *argv[]) {
 	char* filename = argv[3];
 	fout = fopen(filename, "a");
 
-	printf("%s: waiting for data on port UDP %u\n",argv[0],LOCAL_SERVER_PORT);
-	int nbytes;
-	if((nbytes = recvfrom(sd, &receiveBuf.m, sizeof(receiveBuf.m), 0, 
-		(struct sockaddr *) &cliAddr, &cliLen)) == -1)
-	{printf("error on packet receive\n");}
+
 	
 	// int receiveMsg(SwpState *state, Msg *frame, FILE fout, int sd, 
 	// 		struct sockaddr_in *cliAddr, int sizeAddr){
-	receiveMsg(&state,&receiveBuf, fout, sd, &cliAddr, sizeof(cliAddr));
-
+int count= 0;
+	while(1){
+		printf("%s: waiting for data on port UDP %u\n",argv[0],LOCAL_SERVER_PORT);
+		int nbytes;
+		if((nbytes = recvfrom(sd, &receiveBuf.m, sizeof(receiveBuf.m), 0, 
+					(struct sockaddr *) &cliAddr, &cliLen)) == -1)
+			{printf("error on packet receive\n");}
+		receiveMsg(&state,&receiveBuf, fout, sd, &cliAddr, sizeof(cliAddr));
+		count++;
+	}
 	// if(sendto_(sd, ack, strlen(ack), 0, (struct sockaddr *) &cliAddr,
  //    	sizeof(cliAddr)) == -1){
 	// 	printf("ACK send error\n");
