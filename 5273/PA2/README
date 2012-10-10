@@ -1,0 +1,11 @@
+* reliably transfer a data file between a client and server despite possible packet losses
+* sliding windows at both the client and server, with selective acknowledgements
+* timeouts with retransmission
+* dealing with out-of-range packets
+* buffering out-of-order packets
+
+Anne Gatchell
+PA#2
+
+Sliding Window
+

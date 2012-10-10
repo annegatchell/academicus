@@ -16,11 +16,12 @@ value - is an initial value to set the semaphore to*/
 
 typedef u_char SwpSeqno;
 typedef struct Msg {u_char m[512];} Msg;
+typedef struct Data {u_char d[509];} Data;
 
 typedef struct {
   SwpSeqno SeqNum; /*sequence number of this frame */
   SwpSeqno AckNum; /* ack of received frame */
-  u_char Flags; /* up to 8 bits worth of flags */
+  u_char Flags; /* up to 8 bits worth of flags 0 when data, 1 when ACK*/
 } SwpHdr;
 
 
@@ -49,9 +50,12 @@ typedef struct{
   SwpSeqno  LAF;      /* seqno of largest acceptable frame */
 
   struct recvQ_slot{
-    int     received;     /*is msg valid?*/
-    Msg     msg;
+    int valid;
+    SwpSeqno seqno;     /*is msg valid?*/
+    Data     data;
   } recvQ[RWS];
+  SwpSeqno * receivedPCKT_ptr; /*pointer to received packets*/
+
 } SwpState;
 
 

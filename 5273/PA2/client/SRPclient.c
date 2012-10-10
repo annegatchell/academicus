@@ -47,18 +47,12 @@ void initializeState(SwpState *state, SwpSeqno *seqno_pter){
     state->LAR = -1; //Ends up being 255
     state->LFS = -1; //Ends up being 255
     sem_init(&state->sendWindowNotFull, 0, SWS); //set the semaphore to be the size of the SWS 
-    setSwpHdr(&state->hdr, 0 , 0 , 0);
+    setSwpHdr(&state->hdr, 0 , 0 , 0); //Flag = 0 when data, 1 when ack
     state->receivedACK_ptr = seqno_pter;
     state->newSend = SWS;
 }
 
-void deepCopyArray(Msg *from, Msg *to){
-    int i;
-    for(i = 0; i < sizeof(from->m);i++)
-    {
-        to->m[i] = from->m[i];
-    }
-}
+
 
 int sendNewFrame(SwpState *state, Msg *frame, char isSelectRunning, int sd, 
                     fd_set *read_fds, struct timeval *default_timeout, 

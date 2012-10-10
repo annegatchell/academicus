@@ -30,6 +30,22 @@ void printIntArray(FILE *f, int array[], int size){
   fprintf(f,"%d>", array[size-1]);
 }
 
+void deepCopyArray(Msg *from, Msg *to){
+    int i;
+    for(i = 0; i < sizeof(from->m);i++)
+    {
+        to->m[i] = from->m[i];
+    }
+}
+
+void deepCopyArrayShorter(Msg *from, Data *to){
+    int i;
+    for(i = 0; i < sizeof(to->d);i++)
+    {
+        to->d[i] = from->m[i+3];
+    }
+}
+
 /*Function to print to the log file of the client or server. 
 c_or_s is !=0 for client, 0 for server*/
 int toLog(int c_or_s, char* filename, char * action, SwpSeqno seq_num, int acked[], int size_of_acked, SwpState *state){
