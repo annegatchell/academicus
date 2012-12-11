@@ -201,12 +201,14 @@ typedef char * string;
     void_timeout.tv_sec = 2147483647;
     void_timeout.tv_usec = 2147483647;
     struct recvQ_slot *rslot;
+    struct timeval timeofday;
     /*
     Start the loop for sliding window.
     Stop conditions are that the whole file has been read and the LAR == LFS
     */
     int count = 0;
     do{
+
         //size_t fread(void *ptr, size_t size_of_elements, size_t number_of_elements, FILE *a_file);
         //printf("size of reading%ld\n",sizeof(Msg)-3*sizeof(char));
         //Read a frame's worht of the file.
@@ -232,7 +234,7 @@ typedef char * string;
             // {
             //     printf("EROROROEOs\n");
             // }
-          
+            int num_least;
             if (FD_ISSET(sd, &read_fds)){
                 printf("received packet!\n");
                 if ((nbytes = recv(sd, &receive_buffer, sizeof(receive_buffer), 0)) <= 0) {
@@ -244,7 +246,7 @@ typedef char * string;
                         perror("recv");
                     }
                 } else 
-                {//Got an ACK
+                {//Got an ACK! Update everyone's timeouts, get rid of the ACK sequence #'s timeout 
                     printf("got %d\n", receive_buffer[1]);
                     SwpSeqno ack = receive_buffer[1];
                     if(ack == state.LAR +1){
@@ -252,19 +254,30 @@ typedef char * string;
                         struct timeval *least = &state.sendQ[0].timeout;
                         struct timeval *temp;
                         int i;
+                        if(gettimeofday(&timeofday,NULL)){
+                            printf("Get timeofday error\n");
+                        }
+                        
                         for(i = 0;i < SWS;i++){
-                            temp = &state.sendQ[0].timeout;
+                            state.sendQ[i].timeout.tv_sec = timeofday.tv_sec - state.sendQ[i].timeout.tv_sec;
+                            state.sendQ[i].timeout.tv_usec = timeofday.tv_usec - state.sendQ[i].timeout.tv_usec;
+                            temp = &state.sendQ[i].timeout;
                             if((least->tv_sec * 1000000 + least->tv_usec) > 
                                 (temp->tv_sec * 1000000 + temp->tv_usec)){
-                                least = temp;
+                                least->tv_sec = temp->tv_sec;
+                                least->tv_usec = temp->tv_usec;
+                                num_least = i;
                             }
+
                         }
+                        printf("%d", num_least);
                         FD_ZERO(&read_fds); //clear the select set
                         FD_SET(sd, &read_fds); //add socket to the listening list
                         if (select(sd+1, &read_fds, NULL, NULL, least) == -1) {
                             perror("select");
                             exit(4);
                         }
+                        //Move the 
                         ++state.newSend;
                         ++state.LAR;
                         ++state.LFS;
@@ -285,7 +298,9 @@ typedef char * string;
                             temp = &state.sendQ[0].timeout;
                             if((least->tv_sec * 1000000 + least->tv_usec) > 
                                 (temp->tv_sec * 1000000 + temp->tv_usec)){
-                                least = temp;
+                                least->tv_sec = temp->tv_sec;
+                                least->tv_usec = temp->tv_usec;
+                                num_least = i;
                             }
                         }
                         FD_ZERO(&read_fds); //clear the select set
@@ -324,15 +339,17 @@ typedef char * string;
                     temp = &state.sendQ[0].timeout;
                     if((least->tv_sec * 1000000 + least->tv_usec) > 
                         (temp->tv_sec * 1000000 + temp->tv_usec)){
-                        least = temp;
+                        least->tv_sec = temp->tv_sec;
+                        least->tv_usec = temp->tv_usec;
+                        num_least = i;
                     }
                 }
                 FD_ZERO(&read_fds); //clear the select set
                 FD_SET(sd, &read_fds); //add socket to the listening list
-                new_timeout.tv_sec = (int)least->tv_sec; //2 secs
-                printf("%d\n", least->tv_sec);
-                new_timeout.tv_usec = (int)least->tv_usec; 
-                if (select(sd+1, &read_fds, NULL, NULL, &default_timeout) == -1) {
+                new_timeout.tv_sec = least->tv_sec; //2 secs
+                //printf("%d\n", least->tv_sec);
+                new_timeout.tv_usec = least->tv_usec; 
+                if (select(sd+1, &read_fds, NULL, NULL, &new_timeout) == -1) {
                     perror("select");
                     exit(4);
                 }
