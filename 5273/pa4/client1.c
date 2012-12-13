@@ -50,8 +50,15 @@
 #define RSA_CLIENT_CERT "client1.crt"
 #define RSA_CLIENT_KEY "privatekey-client1.key"
  
-#define RSA_CLIENT_CA_CERT "../ssl_stuff/myCA/certs/server_ca.crt"
+#define RSA_CLIENT_CA_CERT "../ssl_stuff/myCA/certs/myca.crt"
 #define RSA_CLIENT_CA_PATH "../ssl_stuff/myCA/certs/"
+
+#define RETURN_NULL(x) if ((x)==NULL) exit (1)
+#define RETURN_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
+#define RETURN_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(1); }
+
+#define ON 1
+#define OFF 0
 
 int sockfd;
 char shareddir[100];
@@ -66,6 +73,7 @@ void sendName();
 void getCommand(char buffer[MAXBUFSIZE]);
 void sendFile(char filename[CMDSIZE]);
 void getFile(char ipaddress[INET6_ADDRSTRLEN]);
+int verify_client = OFF; //To verify a client sertificate, set ON
 
 void alarmHandler(int sig){
 	sendFileList();
@@ -88,23 +96,62 @@ int main(int argc, char *argv[])
     SSL_METHOD      *meth;
     X509            *server_cert;
     EVP_PKEY        *pkey;
+    char *str;
 
 	if (argc != 5) {
-		fprintf(stderr,"usage: client hostname\n");
+		fprintf(stderr,"usage: ./client{#} <client name> <server ip> <server port#> <path to shared directory> \n");
 		exit(1);
 	}
 
 	//==================================================================
+	//Get SSL stuff initialized
 	SSL_library_init(); //Load encryption and hash algs for SSL
 	SSL_load_error_strings(); //Load error strings
 	meth = SSLv3_method();
-	ctx = SSL_CTX_new(meth);
-	if(!ctx){
-		ERR_print_errors_fp(stderr);
-	}
+	 /* Create an SSL_CTX structure */
+	ctx = SSL_CTX_new(meth);                        
+	RETURN_NULL(ctx);
 	
+	//==============
+	if(verify_client == ON)
+ 
+        {
+ 
+              /* Load the client certificate into the SSL_CTX structure */
+                if (SSL_CTX_use_certificate_file(ctx, RSA_CLIENT_CERT, 
+ 
+     SSL_FILETYPE_PEM) <= 0) {
+                   ERR_print_errors_fp(stderr);
+                        exit(1);
+            }
+ 
+              /* Load the private-key corresponding to the client certificate */
+          if (SSL_CTX_use_PrivateKey_file(ctx, RSA_CLIENT_KEY, 
+          SSL_FILETYPE_PEM) <= 0) {
+                     ERR_print_errors_fp(stderr);
+                        exit(1);
+            }
+ 
+              /* Check if the client certificate and private-key matches */
+               if (!SSL_CTX_check_private_key(ctx)) {
+                      fprintf(stderr,"Private key does not match the certificate public key\n");
+                    exit(1);
+            }
+   }
+   
+   /* Load the RSA CA certificate into the SSL_CTX structure */
+        /* This will allow this client to verify the server's     */
+        /* certificate.                                           */
+    if (!SSL_CTX_load_verify_locations(ctx, RSA_CLIENT_CA_CERT, NULL)) {
+                ERR_print_errors_fp(stderr);
+                exit(1);
+    }
+    
+	/* Set flag in context to require peer (server) certificate */
+    /* verification */
+	SSL_CTX_set_verify(ctx,SSL_VERIFY_PEER,NULL);
+	SSL_CTX_set_verify_depth(ctx,1);
 	
-
 	//==================================================================================
 	signal(SIGALRM, alarmHandler);
 
@@ -117,7 +164,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
-
+	//SET up TCP Socket
 	// loop through all the results and connect to the first we can
 	for(p = servinfo; p != NULL; p = p->ai_next) {
 		if ((sockfd = socket(p->ai_family, p->ai_socktype,
@@ -146,6 +193,44 @@ int main(int argc, char *argv[])
 	printf("client: connecting to %s\n", s);
 
 	freeaddrinfo(servinfo); // all done with this structure
+
+	//Create SSL structure
+	ssl = SSL_new(ctx);
+	RETURN_NULL(ssl);
+	printf("here");
+	
+	//Assign the socket into the SSL structure
+	SSL_set_fd(ssl, sockfd);
+	
+	//Perform SSL Handshake on the SSL client 
+	err = SSL_connect(ssl);
+	RETURN_SSL(err);
+	
+	printf("SSL connection using %s\n", SSL_get_cipher(ssl));
+	
+	//---GET the SERVER's CERTIFICATE
+	server_cert = SSL_get_peer_certificate(ssl);
+	
+	if(server_cert != NULL)
+	{
+		printf ("Server certificate:\n");
+             str = X509_NAME_oneline(X509_get_subject_name(server_cert),0,0);
+            RETURN_NULL(str);
+           printf ("\t subject: %s\n", str);
+           free (str);
+ 
+            str = X509_NAME_oneline(X509_get_issuer_name(server_cert),0,0);
+             RETURN_NULL(str);
+           printf ("\t issuer: %s\n", str);
+            free(str);
+ 
+             X509_free (server_cert);
+	}
+	else{
+		printf("The SSL server does not have certificate.\n");
+	}
+	//===================================================
+	//Now do some data exchange!
 
 	//save client name
 	bzero(&clientname,sizeof(clientname));

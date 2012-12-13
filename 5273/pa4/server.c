@@ -53,7 +53,7 @@
 #define RSA_SERVER_CERT "server1.crt"
 #define RSA_SERVER_KEY "privatekey-server1.key"
  
-#define RSA_SERVER_CA_CERT "../ssl_stuff/myCA/certs/server_ca.crt"
+#define RSA_SERVER_CA_CERT "../ssl_stuff/myCA/certs/myca.crt"
 #define RSA_SERVER_CA_PATH "../ssl_stuff/myCA/certs/"
 
 #define ON 1
@@ -117,7 +117,7 @@ int main(int argc,char *argv[])
 
 	//check arguments here
 	if (argc != 2)  {
-		printf("usage is: ./pserver <port#>\n");
+		printf("usage is: ./server <port#>\n");
 		return 0;
 	}
 
@@ -254,7 +254,7 @@ int main(int argc,char *argv[])
 			//process the new connection
 			if(FD_ISSET(sockfd,&readfds)){
 
-				processNewConnection(&ctx);
+				processNewConnection(ctx);
 
 			}
 
@@ -358,6 +358,7 @@ void processNewConnection(SSL_CTX *ctx){
 	//Create SSL structure
 	ssl = SSL_new(ctx);
 	RETURN_NULL(ssl);
+	printf("here");
 	
 	//Assign the socket into the SSL structure
 	SSL_set_fd(ssl, new_fd);
