@@ -67,17 +67,18 @@ char dlfile[CMDSIZE];
 int alreadyTransferring = 0;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void sendUsrCommands();
-void sendFileList();
-void sendName();
+void sendUsrCommands(SSL *ssl);
+void sendFileList(SSL *ssl);
+void sendName(SSL *ssl);
 void getCommand(char buffer[MAXBUFSIZE]);
 void sendFile(char filename[CMDSIZE]);
 void getFile(char ipaddress[INET6_ADDRSTRLEN]);
 int verify_client = OFF; //To verify a client sertificate, set ON
 //SSL *ssl;
+SSL *hackyGlobal;
 
 void alarmHandler(int sig){
-	sendFileList();
+	sendFileList(hackyGlobal);
 	alarm(180);
 }
 
@@ -198,6 +199,7 @@ int main(int argc, char *argv[])
 	//Create SSL structure
 	ssl = SSL_new(ctx);
 	RETURN_NULL(ssl);
+	hackyGlobal = ssl;
 	printf("here");
 	
 	//Assign the socket into the SSL structure
@@ -242,7 +244,7 @@ int main(int argc, char *argv[])
 	sendFileList(ssl); //send file list to server
 
 	//Create thread that waits for commands from the user
-	int r = pthread_create(&th, 0, sendUsrCommands, &ssl);
+	int r = pthread_create(&th, 0, sendUsrCommands, ssl);
 	if (r != 0) { fprintf(stderr, "thread create failed\n"); }
 
 	while(1){
@@ -256,7 +258,9 @@ int main(int argc, char *argv[])
 
 		if ((selRet != -1) && (selRet != 0)) {
 			//Handle messages from server
-			int rv = recv(sockfd, buffer, MAXBUFSIZE, 0);
+			//SSL Style!
+			//int rv = recv(sockfd, buffer, MAXBUFSIZE, 0);
+			int rv = SSL_read(ssl, buffer, MAXBUFSIZE);
 			if (rv > 0){getCommand(buffer);}
 
 			else if(rv == -1){
@@ -292,7 +296,7 @@ int main(int argc, char *argv[])
 }
 
 //Handle commands from user and send to server
-void sendUsrCommands(){
+void sendUsrCommands(SSL *ssl){
 	char command[CMDSIZE];
 	char sndbuffer[MAXBUFSIZE];
 	char cmdbuffer[CMDSIZE];
@@ -300,6 +304,7 @@ void sendUsrCommands(){
 	//char list[1024];
 	//char lscommand[1024];
 	char* fname;
+	int err;
 
 	pthread_detach(pthread_self());  //automatically clears the threads memory on exit
 
@@ -315,14 +320,14 @@ void sendUsrCommands(){
 
 		//Send commands to server based on user commands
 		bzero(&sndbuffer,sizeof(sndbuffer));
-
+		printf("command is %s\n", command);
 		//Exit client
 		if(!strcmp(command, EXITCMD)){
 
 			memcpy(&sndbuffer[0], EXITCMD,sizeof(EXITCMD));
-
 			//send(sockfd, sndbuffer, sizeof(sndbuffer), 0);
 			printf("sending: %s\n", sndbuffer);
+			SSL_shutdown(ssl);
 			close(sockfd);
 			exit(0);
 		}
@@ -330,13 +335,16 @@ void sendUsrCommands(){
 		//Get list of files from server
 		else if(!strcmp(command, LISTCMD)){
 			memcpy(&sndbuffer[0], LISTCMD,sizeof(LISTCMD));
-			send(sockfd, sndbuffer, sizeof(sndbuffer), 0);
+			//Send SSL style!
+			//send(sockfd, sndbuffer, sizeof(sndbuffer), 0);
+			err = SSL_write(hackyGlobal, sndbuffer, sizeof(sndbuffer));
+			RETURN_SSL(err);
 
 		}
 
 		//Send list of files to server
 		else if(!strcmp(command, SENDFILES)){
-			sendFileList();
+			sendFileList(ssl);
 		}
 
 		//Get file from client also on server
@@ -361,7 +369,10 @@ void sendUsrCommands(){
 				printf("Getting File: %s\n", dlfile);
 
 				//Send file name to server
-				send(sockfd, sndbuffer, sizeof(sndbuffer), 0);
+				//SSL style!!
+				//send(sockfd, sndbuffer, sizeof(sndbuffer), 0);
+				err = SSL_write(ssl, sndbuffer, sizeof(sndbuffer));
+				RETURN_SSL(err);
 
 			}
 		}
@@ -381,6 +392,7 @@ void sendUsrCommands(){
 
 */
 void sendFileList(SSL *ssl){
+	printf("NON-HACKY\n");
 	char sndbuffer[MAXBUFSIZE];
 	char filename[CMDSIZE];
 	char list[1024];
@@ -889,6 +901,8 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 
 		char directory[1024];
 		bzero(&directory, sizeof(directory));
+		//Receive SSL style!
+		//int rv3 = recv(recvsockfd, filebuffer, MAXBUFSIZE, 0);
 		int rv3 = recv(recvsockfd, filebuffer, MAXBUFSIZE, 0);
 
 		if(rv3 > 0){

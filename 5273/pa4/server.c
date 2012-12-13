@@ -70,6 +70,7 @@ void processNewConnection();
 void build_sock_set();
 void getCommand(char buffer[MAXBUFSIZE], int sockid);
 int findIndex(int sockid);
+SSL* findSSL(int sockid);
 void sendList(int index);
 void manageGet(char fname[CMDSIZE], int sockid);
 void printList();
@@ -313,6 +314,8 @@ void connection(int sockid) {
 	err = SSL_read(ssl, buffer, sizeof(buffer) -1);
 	printf("Got some ssl socket action!\n");
 	RETURN_SSL(err);
+	buffer[err] = '\0';
+	printf("command is %s", buffer);
 	if(err > 0){
 		getCommand(buffer, sockid);
 	}
@@ -443,7 +446,10 @@ void processNewConnection(SSL_CTX *ctx){
 
 		int s;
 
-		s = send(new_fd, sendbuffer, sizeof(sendbuffer), 0);
+		//Send SSL style!
+		//s = send(new_fd, sendbuffer, sizeof(sendbuffer), 0);
+		
+		s = SSL_write(findSSL(new_fd), sendbuffer, sizeof(sendbuffer));
 
 		if( s == -1){
 			printf("Sending error!\n");
@@ -574,6 +580,11 @@ int findIndex(int sockid){
 
 }
 
+//Return the SSL struct for a given sockid
+SSL* findSSL(int sockid){
+	return &clientArray[findIndex(sockid)].ssl;
+}
+
 //Send list of files to client with index in clientArray
 void sendList(int index){
 	char sndbuffer[MAXBUFSIZE];
@@ -624,7 +635,9 @@ void sendList(int index){
 
 	int s;
 
-	s = send(clientArray[index].sock, sndbuffer, sizeof(sndbuffer), 0);
+	//Send SSL style!!
+	//s = send(clientArray[index].sock, sndbuffer, sizeof(sndbuffer), 0);
+	s = SSL_write(&clientArray[index].ssl, sndbuffer, sizeof(sndbuffer));
 	if( s == -1){
 		printf("Sending error!\n");
 		perror("send()");
@@ -728,9 +741,11 @@ void manageGet(char fname[CMDSIZE], int index){
 			memcpy(&sendbuffer[OFFSET1], nofilemsg, sizeof(nofilemsg));
 
 			int s;
-
-			s = send(clientArray[index].sock, sendbuffer, sizeof(sendbuffer), 0);
-
+			//Send SSL style!
+			//s = send(clientArray[index].sock, sendbuffer, sizeof(sendbuffer), 0);
+			//int sock_temp = clientArray[index].sock;
+			s = SSL_write(&clientArray[index].ssl, sendbuffer, sizeof(sendbuffer));
+			
 			if( s == -1){
 				printf("Sending error!\n");
 				perror("send()");
@@ -747,14 +762,18 @@ void manageGet(char fname[CMDSIZE], int index){
 		memcpy(&ownersndbuffer[0], GET,sizeof(GET));
 		memcpy(&ownersndbuffer[OFFSET1], fname, CMDSIZE);
 
-		s = send(clientArray[fowner].sock, ownersndbuffer, sizeof(ownersndbuffer), 0);
-
+		//Send SSL style!
+		//s = send(clientArray[fowner].sock, ownersndbuffer, sizeof(ownersndbuffer), 0);
+		s = SSL_write(&clientArray[fowner].ssl, ownersndbuffer, sizeof(ownersndbuffer));
+		
 		memcpy(&recvsndbuffer[0], IP, sizeof(IP));
 		memcpy(&recvsndbuffer[OFFSET1], clientArray[fowner].address,sizeof(clientArray[fowner].address));
 
 		//Send the ip address of the client who owns the file to the client who
 		//wants the file
-		r = send(clientArray[index].sock, recvsndbuffer, sizeof(recvsndbuffer), 0);
+		//SSL Style!
+		//r = send(clientArray[index].sock, recvsndbuffer, sizeof(recvsndbuffer), 0);
+		r = SSL_write(&clientArray[index].ssl, recvsndbuffer, sizeof(recvsndbuffer));
 
 		if( s == -1 || r == -1){
 			printf("Sending error!\n");
@@ -774,12 +793,16 @@ void manageGet(char fname[CMDSIZE], int index){
 
 		int s;
 
-		s = send(clientArray[index].sock, sendbuffer, sizeof(sendbuffer), 0);
+		//Send SSL style!
+		//s = send(clientArray[index].sock, sendbuffer, sizeof(sendbuffer), 0);
+		s = SSL_write(&clientArray[index].ssl, sendbuffer, sizeof(sendbuffer));
 
 		if( s == -1){
 			printf("Sending error!\n");
 			perror("send()");
 		}
 	}
+	
+	
 }
 
