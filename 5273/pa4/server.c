@@ -23,9 +23,12 @@
 
 #include "hw4lib.h"
 
-#include "openssl/bio.h"
-#include "openssl/ssl.h"
-#include "openssl/err.h"
+//#include "openssl/bio.h"
+//#include "openssl/ssl.h"
+//#include "openssl/err.h"
+#include <openssl/crypto.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 
 #define MAX_CONNECTS 50
@@ -46,6 +49,12 @@
 #define COMMA ","
 #define NAME "name"
 #define MSG "msg"
+
+#define RSA_SERVER_CERT "server.crt"
+#define RSA_SERVER_KEY "privatekey-server1.key"
+ 
+#define RSA_SERVER_CA_CERT "../ssl_stuff/myCA/certs/server_ca.crt"
+#define RSA_SERVER_CA_PATH "../ssl_stuff/myCA/certs/"
 
 
 //Function Declarations
@@ -78,6 +87,10 @@ fd_set readfds;
 
 int main(int argc,char *argv[])
 {
+	int err;
+	SSL_CTX *ctx;
+	SSL *ssl;
+	SSL_METHOD *meth;
 
 	struct timeval currTime;
 	//pthread_t th;
@@ -99,7 +112,19 @@ int main(int argc,char *argv[])
 	}
 
 	strcpy(portnum,argv[1]);
-
+	
+	//==================================================================
+	SSL_library_init(); //Load encryption and hash algs for SSL
+	SSL_load_error_strings(); //Load error strings
+	meth = SSLv3_method();
+	ctx = SSL_CTX_new(meth);
+	if(!ctx){
+		ERR_print_errors_fp(stderr);
+		exit(1);
+	}
+	
+	
+	
 
 	//==================================================================================
 	memset(&hints, 0, sizeof hints);

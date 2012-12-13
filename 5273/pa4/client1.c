@@ -24,9 +24,9 @@
 
 #include "clientlib.h"
 
-#include "openssl/bio.h"
-#include "openssl/ssl.h"
-#include "openssl/err.h"
+#include <openssl/crypto.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #define MAX_CONNECTS 50
 #define OFFSET1 20
@@ -47,11 +47,11 @@
 #define DLDIR "../Downloaded_Files"
 
 //#define RSA_CLIENT_KEY "../
-#define RSA_CLIENT_CERT "client.crt"
-#define RSA_CLIENT_KEY "client.key"
+#define RSA_CLIENT_CERT "client1.crt"
+#define RSA_CLIENT_KEY "privatekey-client1.key"
  
-#define RSA_CLIENT_CA_CERT "client_ca.crt"
-#define RSA_CLIENT_CA_PATH "sys$common:[syshlp.examples.ssl]"
+#define RSA_CLIENT_CA_CERT "../ssl_stuff/myCA/certs/server_ca.crt"
+#define RSA_CLIENT_CA_PATH "../ssl_stuff/myCA/certs/"
 
 int sockfd;
 char shareddir[100];
@@ -82,12 +82,30 @@ int main(int argc, char *argv[])
 	fd_set readfds;
 	pthread_t th;
 
+	int err;
+	SSL_CTX         *ctx;
+    SSL            *ssl;
+    SSL_METHOD      *meth;
+    X509            *server_cert;
+    EVP_PKEY        *pkey;
 
 	if (argc != 5) {
 		fprintf(stderr,"usage: client hostname\n");
 		exit(1);
 	}
 
+	//==================================================================
+	SSL_library_init(); //Load encryption and hash algs for SSL
+	SSL_load_error_strings(); //Load error strings
+	meth = SSLv3_method();
+	ctx = SSL_CTX_new(meth);
+	if(!ctx){
+		ERR_print_errors_fp(stderr);
+	}
+	
+	
+
+	//==================================================================================
 	signal(SIGALRM, alarmHandler);
 
 	strcpy(shareddir, argv[4]);
