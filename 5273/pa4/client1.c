@@ -76,7 +76,9 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]);
 int verify_client = OFF; //To verify a client sertificate, set ON
 //SSL *ssl;
 SSL *hackyGlobal;
-
+SSL_CTX         *ctx;
+SSL_METHOD      *meth;
+	
 void alarmHandler(int sig){
 	sendFileList(hackyGlobal);
 	alarm(180);
@@ -93,9 +95,7 @@ int main(int argc, char *argv[])
 	pthread_t th;
 
 	int err;
-	SSL_CTX         *ctx;
     SSL            *ssl;
-    SSL_METHOD      *meth;
     X509            *server_cert;
     EVP_PKEY        *pkey;
     char *str;
@@ -119,26 +119,23 @@ int main(int argc, char *argv[])
  
         {
  
-              /* Load the client certificate into the SSL_CTX structure */
-                if (SSL_CTX_use_certificate_file(ctx, RSA_CLIENT_CERT, 
- 
-     SSL_FILETYPE_PEM) <= 0) {
+        /* Load the client certificate into the SSL_CTX structure */
+       if (SSL_CTX_use_certificate_file(ctx, RSA_CLIENT_CERT, SSL_FILETYPE_PEM) <= 0) {
                    ERR_print_errors_fp(stderr);
                         exit(1);
             }
  
-              /* Load the private-key corresponding to the client certificate */
-          if (SSL_CTX_use_PrivateKey_file(ctx, RSA_CLIENT_KEY, 
-          SSL_FILETYPE_PEM) <= 0) {
+        /* Load the private-key corresponding to the client certificate */
+        if (SSL_CTX_use_PrivateKey_file(ctx, RSA_CLIENT_KEY, SSL_FILETYPE_PEM) <= 0) {
                      ERR_print_errors_fp(stderr);
                         exit(1);
-            }
+        }
  
-              /* Check if the client certificate and private-key matches */
-               if (!SSL_CTX_check_private_key(ctx)) {
-                      fprintf(stderr,"Private key does not match the certificate public key\n");
+        /* Check if the client certificate and private-key matches */
+        if (!SSL_CTX_check_private_key(ctx)) {
+            fprintf(stderr,"Private key does not match the certificate public key\n");
                     exit(1);
-            }
+        }
    }
    
    /* Load the RSA CA certificate into the SSL_CTX structure */
@@ -225,7 +222,7 @@ int main(int argc, char *argv[])
             str = X509_NAME_oneline(X509_get_issuer_name(server_cert),0,0);
              RETURN_NULL(str);
            printf ("\t issuer: %s\n", str);
-            free(str);
+           free(str);
  
              X509_free (server_cert);
 	}
@@ -466,7 +463,7 @@ void sendFileList(SSL *ssl){
 void sendName(SSL *ssl){
 	char namebuffer[MAXBUFSIZE];
 	int err;
-
+	
 	memcpy(&namebuffer[0], NAME, sizeof(NAME));
 	memcpy(&namebuffer[OFFSET1], clientname, sizeof(clientname));
 
@@ -559,7 +556,36 @@ void sendFile(char filename[CMDSIZE]){
 	int new_fd;
 	socklen_t sin_size;
 	struct sockaddr_storage their_addr;
-
+	SSL *ssl;
+	X509            *other_cert;
+    EVP_PKEY        *pkey;
+    char *str;
+    int err;
+    SSL_CTX         *ctx2;
+	SSL_METHOD      *meth2;
+	
+	//Get SSL stuff initialized
+	SSL_library_init(); //Load encryption and hash algs for SSL
+	SSL_load_error_strings(); //Load error strings
+	meth2 = SSLv3_method();
+	 /* Create an SSL_CTX structure */
+	ctx2 = SSL_CTX_new(meth2);                        
+	RETURN_NULL(ctx2);
+	
+	
+   /* Load the RSA CA certificate into the SSL_CTX structure */
+   /* This will allow this client to verify the server's     */
+   /* certificate.                                           */
+    if (!SSL_CTX_load_verify_locations(ctx2, RSA_CLIENT_CA_CERT, NULL)) {
+                ERR_print_errors_fp(stderr);
+                exit(1);
+    }
+	/* Set flag in context to require peer (server) certificate */
+    /* verification */
+	SSL_CTX_set_verify(ctx2,SSL_VERIFY_PEER,NULL);
+	SSL_CTX_set_verify_depth(ctx2,1);
+	
+	
 	memset(&hints2, 0, sizeof hints2);
 	hints2.ai_family = AF_UNSPEC;
 	hints2.ai_socktype = SOCK_STREAM;
@@ -573,7 +599,7 @@ void sendFile(char filename[CMDSIZE]){
 		pthread_mutex_unlock(&mutex);
 		pthread_exit(NULL);
 	}
-
+printf("Got here1\n");
 	for(p2 = servinfo2; p2 != NULL; p2 = p2->ai_next) {
 		if ((fsendsock = socket(p2->ai_family, p2->ai_socktype,
 				p2->ai_protocol)) == -1) {
@@ -601,7 +627,7 @@ void sendFile(char filename[CMDSIZE]){
 
 		break;
 	}
-
+printf("Got here2\n");
 	if (p2 == NULL)  {
 		fprintf(stderr, "Client: failed to bind to Transfer Socket\n");
 		close(fsendsock);
@@ -631,7 +657,7 @@ void sendFile(char filename[CMDSIZE]){
 	//add socket to set
 	FD_ZERO(&readfds2);
 	FD_SET(fsendsock,&readfds2);
-
+	printf("Got here3\n");
 	//Wait for communication on socket
 	int selRet = select(FD_SETSIZE, &readfds2, NULL, NULL, &timeout);
 
@@ -658,10 +684,50 @@ void sendFile(char filename[CMDSIZE]){
 				pthread_mutex_unlock(&mutex);
 				pthread_exit(NULL);
 			}
+			printf("Accepted a connection\n");
 
 			inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr *)&their_addr),ip, sizeof ip);
 			printf("\nSending File %s to %s\n", filename, ip);
 
+			//create SSL structure
+			ssl = SSL_new(ctx2);
+			RETURN_NULL(ssl);
+			
+			//Assign the socket into the SSL structure
+			SSL_set_fd(ssl, fsendsock);
+		printf("here\n");
+			//Perform SSL Handshake on the SSL server
+			err = SSL_accept(ssl);
+			RETURN_SSL(err);
+		
+			printf("SSL connection using %s\n", SSL_get_cipher(ssl));
+		
+			//---GET the SERVER's CERTIFICATE
+			other_cert = SSL_get_peer_certificate(ssl);
+		
+			if(other_cert != NULL)
+			{
+				printf ("Server certificate:\n");
+		        str = X509_NAME_oneline(X509_get_subject_name(other_cert),0,0);
+		        RETURN_NULL(str);
+		        printf ("\t subject: %s\n", str);
+		        free (str);
+		 
+		        str = X509_NAME_oneline(X509_get_issuer_name(other_cert),0,0);
+		        RETURN_NULL(str);
+		        printf ("\t issuer: %s\n", str);
+		        free(str);
+		 
+		        X509_free (other_cert);
+			}
+			else{
+				printf("This client does not have certificate, so I am not going to send the file\n");
+				SSL_shutdown(ssl);
+				close(fsendsock);
+				SSL_free(ssl);
+				return;
+			}
+	
 			bzero(&directory, sizeof(directory));
 			bzero(&sndbuffer,sizeof(sndbuffer));
 			bzero(&sizebuffer,sizeof(sizebuffer));
@@ -676,9 +742,12 @@ void sendFile(char filename[CMDSIZE]){
 				char message[MAXBUFSIZE];
 				char nofilemsg[] = "\nFile Not Available\n";
 				memcpy(message, MSG, sizeof(MSG));
-				memcpy(message[OFFSET1], nofilemsg, sizeof(nofilemsg));
+				memcpy(&message[OFFSET1], nofilemsg, sizeof(nofilemsg));
 
-				send(new_fd, message, sizeof(message), 0);
+				//SSL style!
+				//send(new_fd, message, sizeof(message), 0);
+				err = SSL_write(ssl, message, sizeof(message));
+				RETURN_SSL(err);
 
 				close(new_fd);
 				pthread_mutex_lock(&mutex);
@@ -696,8 +765,10 @@ void sendFile(char filename[CMDSIZE]){
 			int readResult = fread(sndbuffer,1,lSize,fps);
 			if(readResult != lSize){
 				printf("Reading error!\n");
+				SSL_shutdown(ssl);
 				close(fsendsock);
 				close(new_fd);
+				SSL_free(ssl);
 				pthread_mutex_lock(&mutex);
 				alreadyTransferring = 0;
 				pthread_mutex_unlock(&mutex);
@@ -714,13 +785,17 @@ void sendFile(char filename[CMDSIZE]){
 			int s;
 
 			//Send size of file to client
-			s = send(new_fd, sizebuffer, sizeof(sizebuffer), 0);
+			//SSL Style!
+			//s = send(new_fd, sizebuffer, sizeof(sizebuffer), 0);
+			s = SSL_write(ssl, sizebuffer, sizeof(sizebuffer));
 
 			if( s == -1){
 				printf("Sending error!\n");
 				perror("send()");
+				SSL_shutdown(ssl);
 				close(fsendsock);
 				close(new_fd);
+				SSL_free(ssl);
 				pthread_mutex_lock(&mutex);
 				alreadyTransferring = 0;
 				pthread_mutex_unlock(&mutex);
@@ -728,13 +803,17 @@ void sendFile(char filename[CMDSIZE]){
 			}
 
 			//Send file data to client
-			s = send(new_fd, sndbuffer, sizeof(sndbuffer), 0);
+			//SSL style
+			//s = send(new_fd, sndbuffer, sizeof(sndbuffer), 0);
+			s = SSL_write(ssl, sndbuffer, sizeof(sndbuffer));
 
 			if( s == -1){
 				printf("Sending error!\n");
 				perror("send()");
+				SSL_shutdown(ssl);
 				close(fsendsock);
 				close(new_fd);
+				SSL_free(ssl);
 				pthread_exit(NULL);
 			}
 
@@ -782,8 +861,39 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 	fd_set readfds2;
 	struct timeval timeout;
 	int lSize = 0;
-
+	SSL *ssl;
+	int err;
+	SSL_CTX         *ctx3;
+	SSL_METHOD      *meth3;
+	
+	printf("in the getFile func\n");
 	sleep(5);//Wait for client to make connection
+	
+	//Get SSL stuff initialized
+	SSL_library_init(); //Load encryption and hash algs for SSL
+	SSL_load_error_strings(); //Load error strings
+	meth3 = SSLv3_method();
+	 /* Create an SSL_CTX structure */
+	ctx3 = SSL_CTX_new(meth3);                        
+	RETURN_NULL(ctx3);
+	
+	/* Load the server certificate into the SSL_CTX structure */
+    if (SSL_CTX_use_certificate_file(ctx3, RSA_CLIENT_CERT, SSL_FILETYPE_PEM) <= 0) {
+		ERR_print_errors_fp(stderr);
+		exit(1);
+	}
+	
+	/* Load the private-key corresponding to the server certificate */
+          if (SSL_CTX_use_PrivateKey_file(ctx3, RSA_CLIENT_KEY, SSL_FILETYPE_PEM) <= 0) {
+              ERR_print_errors_fp(stderr);
+                exit(1);
+    }
+ 
+      /* Check if the server certificate and private-key matches */
+       if (!SSL_CTX_check_private_key(ctx3)) {
+			fprintf(stderr,"Private key does not match the certificate public key\n");
+			exit(1);
+    }
 
 	hintsr2.ai_family = AF_UNSPEC;
 	hintsr2.ai_socktype = SOCK_STREAM;
@@ -802,12 +912,12 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 		}
 
 		int c;
-
+printf("Abotu to try to connect\n");
 		c = connect(recvsockfd, pr2->ai_addr, pr2->ai_addrlen);
 		if(c == 0){
 			break;
 		}
-
+		printf("Connected!\n");
 		if(c == -1){
 			printf("Machine hosting this file is not available at this moment.\n");
 			close(recvsockfd);
@@ -818,12 +928,27 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 		break;
 	}
 
+	printf("Got connected\n");
+
 	if (pr2 == NULL) {
 		fprintf(stderr, "client: failed to connect\n");
 		close(recvsockfd);
 		pthread_exit(NULL);
 	}
-
+	//GETTER MUST================================================
+	//Do the SSL handshake----------------------
+	//Create SSL structure
+	ssl = SSL_new(ctx3);
+	RETURN_NULL(ssl);
+	//Assign the socket into the SSL structure
+	SSL_set_fd(ssl,recvsockfd);
+	
+	//Perform SSL Handshake on the SSL server
+	err = SSL_accept(ssl);
+	RETURN_SSL(err);
+	printf("File Getter did the handshake\n");
+	//-----------==================================
+	
 	freeaddrinfo(servinfor2);
 
 	timeout.tv_sec = 30;
@@ -838,8 +963,10 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 		printf("Started Downloading File %s from %s ...\n",dlfile,ipaddress);
 
 		//receive message
-		int rv3 = recv(recvsockfd, filesize, MAXBUFSIZE, 0);
-
+		//SSL style!
+		//int rv3 = recv(recvsockfd, filesize, MAXBUFSIZE, 0);
+		int rv3 = SSL_read(ssl, filesize, MAXBUFSIZE);
+	printf("here fileszie %s!\n", filessize);
 		if(rv3 > 0){
 			//Get size of file
 			char command[CMDSIZE];
@@ -854,8 +981,10 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 				char message[FILELISTSIZE];
 				bzero(&message,sizeof(message));
 				memcpy(message, &filesize[OFFSET1],sizeof(filesize));
-				printf("%s",message);
+				printf("Client error %s",message);
+				SSL_shutdown(ssl);
 				close(recvsockfd);
+				SSL_free(ssl);
 				pthread_exit(NULL);
 			}
 
@@ -867,27 +996,35 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 		else if(rv3 == -1){
 			printf("Receive error: ");
 			perror("recv()");
+			SSL_shutdown(ssl);
 			close(recvsockfd);
+			SSL_free(ssl);
 			pthread_exit(NULL);
 		}
 
 		else if(rv3 == 0){
 			//Server has disconnected
 			printf("Client closed connection!\n");
+			SSL_shutdown(ssl);
 			close(recvsockfd);
+			SSL_free(ssl);
 			pthread_exit(NULL);
 		}
 	}
 	else if (selRet == 0) {
 		printf("Timeout: Client did not send file in time\n");
+		SSL_shutdown(ssl);
 		close(recvsockfd);
+		SSL_free(ssl);
 		pthread_exit(NULL);
 	}
 
 	else if (selRet == -1) {
 		perror("select()");
 		printf("select() failed : \n");
+		SSL_shutdown(ssl);
 		close(recvsockfd);
+		SSL_free(ssl);
 		pthread_exit(NULL);
 	}
 
@@ -896,14 +1033,14 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 	FD_ZERO(&readfds2);
 	FD_SET(recvsockfd,&readfds2);
 	selRet = select(FD_SETSIZE, &readfds2, NULL, NULL, &timeout);
-
+	//REcevie the file
 	if ((selRet != -1) && (selRet != 0)) {
-
+	printf("receive the file\n");
 		char directory[1024];
 		bzero(&directory, sizeof(directory));
 		//Receive SSL style!
 		//int rv3 = recv(recvsockfd, filebuffer, MAXBUFSIZE, 0);
-		int rv3 = recv(recvsockfd, filebuffer, MAXBUFSIZE, 0);
+		int rv3 = SSL_read(ssl, filebuffer, MAXBUFSIZE);
 
 		if(rv3 > 0){
 			//Get file
@@ -923,32 +1060,42 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 		else if(rv3 == -1){
 			printf("Receive error: ");
 			perror("recv()");
+			SSL_shutdown(ssl);
 			close(recvsockfd);
+			SSL_free(ssl);
 			pthread_exit(NULL);
 		}
 
 		else if(rv3 == 0){
 			//Server has disconnected
 			printf("Server Closed Socket Connection!\n");
+			SSL_shutdown(ssl);
 			close(recvsockfd);
+			SSL_free(ssl);
 			pthread_exit(NULL);
 		}
 	}
 	else if (selRet == 0) {
 		printf("Timeout: Client did not send file in time\n");
+		SSL_shutdown(ssl);
 		close(recvsockfd);
+		SSL_free(ssl);
 		pthread_exit(NULL);
 	}
 
 	else if (selRet == -1) {
 		perror("select()");
 		printf("select() failed : \n");
+		SSL_shutdown(ssl);
 		close(recvsockfd);
+		SSL_free(ssl);
 		pthread_exit(NULL);
 	}
 
 
+	SSL_shutdown(ssl);
 	close(recvsockfd);
+	SSL_free(ssl);
 	printf("Finished Downloading File\n");
 	pthread_exit(NULL);
 }

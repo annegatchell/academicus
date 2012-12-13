@@ -338,7 +338,8 @@ void connection(int sockid) {
 		RETURN_ERR(err, "close");
 		
 		//Free that SSL structure
-		SSL_free(ssl);
+		printf("chaos1\n");
+		//SSL_free(ssl);
 		
 		//Send new list to everyone
 		for(k = 0; k < 4; k++){
@@ -462,6 +463,7 @@ void processNewConnection(SSL_CTX *ctx){
 		err = SSL_shutdown(ssl);
 		RETURN_SSL(err);
 		close(new_fd);
+		printf("chaos 2\n");
 		SSL_free(ssl);
 	}
 
@@ -541,6 +543,7 @@ void getCommand(char buffer[MAXBUFSIZE], int sockid){
 		RETURN_SSL(err);
 		err = close(clientArray[index].sock);
 		RETURN_ERR(err, "close");
+		printf("chaos 3\n");
 		SSL_free(&clientArray[index].ssl);
 		
 	}
