@@ -67,9 +67,9 @@ char dlfile[CMDSIZE];
 int alreadyTransferring = 0;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void sendUsrCommands(SSL *ssl);
-void sendFileList(SSL *ssl);
-void sendName(SSL *ssl);
+void *sendUsrCommands(void *ssll);
+void *sendFileList(void * ssll);
+void *sendName(void *ssll);
 void getCommand(char buffer[MAXBUFSIZE]);
 void sendFile(char filename[CMDSIZE]);
 void getFile(char ipaddress[INET6_ADDRSTRLEN]);
@@ -77,14 +77,14 @@ int verify_client = OFF; //To verify a client sertificate, set ON
 //SSL *ssl;
 SSL *hackyGlobal;
 SSL_CTX         *ctx;
-SSL_METHOD      *meth;
+const SSL_METHOD      *meth;
 	
 void alarmHandler(int sig){
 	sendFileList(hackyGlobal);
 	alarm(180);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[]) 
 {
 
 	char buffer[MAXBUFSIZE];
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 	int err;
     SSL            *ssl;
     X509            *server_cert;
-    EVP_PKEY        *pkey;
+   // EVP_PKEY        *pkey;
     char *str;
 
 	if (argc != 5) {
@@ -217,12 +217,12 @@ int main(int argc, char *argv[])
              str = X509_NAME_oneline(X509_get_subject_name(server_cert),0,0);
             RETURN_NULL(str);
            printf ("\t subject: %s\n", str);
-           free (str);
+          // free (str);
  
             str = X509_NAME_oneline(X509_get_issuer_name(server_cert),0,0);
              RETURN_NULL(str);
            printf ("\t issuer: %s\n", str);
-           free(str);
+           //free(str);
  
              X509_free (server_cert);
 	}
@@ -293,7 +293,8 @@ int main(int argc, char *argv[])
 }
 
 //Handle commands from user and send to server
-void sendUsrCommands(SSL *ssl){
+void *sendUsrCommands(void *ssll){
+	SSL *ssl = (SSL *)ssll;
 	char command[CMDSIZE];
 	char sndbuffer[MAXBUFSIZE];
 	char cmdbuffer[CMDSIZE];
@@ -388,7 +389,7 @@ void sendUsrCommands(SSL *ssl){
 	filename0,size0,filename1,size1,...
 
 */
-void sendFileList(SSL *ssl){
+void *sendFileList(void *ssl){
 	printf("NON-HACKY\n");
 	char sndbuffer[MAXBUFSIZE];
 	char filename[CMDSIZE];
@@ -410,6 +411,7 @@ void sendFileList(SSL *ssl){
 	strcat(lscommand,shareddir);
 
 	//Use ls to get the list of files in shared directory
+	
 	fpls = popen(lscommand, "r");
 	if(fpls == NULL){printf("Error obtaining list of files in directory\n");}
 
@@ -451,7 +453,7 @@ void sendFileList(SSL *ssl){
 	memcpy(&sndbuffer[OFFSET1], list,sizeof(list));
 
 	//Send data, SSL style
-	err = SSL_write(ssl, sndbuffer, sizeof(sndbuffer));
+	err = SSL_write((SSL*)ssl, sndbuffer, sizeof(sndbuffer));
 	RETURN_SSL(err);
 	//send(sockfd, sndbuffer, sizeof(sndbuffer), 0);
 
@@ -460,16 +462,17 @@ void sendFileList(SSL *ssl){
 /*
 	Send name of client to server.
 */
-void sendName(SSL *ssl){
+void *sendName(void *ssl){
 	char namebuffer[MAXBUFSIZE];
-	int err;
-	
+	int err = 0;
 	memcpy(&namebuffer[0], NAME, sizeof(NAME));
 	memcpy(&namebuffer[OFFSET1], clientname, sizeof(clientname));
 
 	//Send SSL style
-	err = SSL_write(ssl, namebuffer, sizeof(namebuffer));
+	err = SSL_write((SSL *)ssl, namebuffer, sizeof(namebuffer));
+	RETURN_SSL(err);
 	//send(sockfd, namebuffer, sizeof(namebuffer), 0);
+	
 }
 
 /*
@@ -558,11 +561,11 @@ void sendFile(char filename[CMDSIZE]){
 	struct sockaddr_storage their_addr;
 	SSL *ssl;
 	X509            *other_cert;
-    EVP_PKEY        *pkey;
+    //EVP_PKEY        *pkey;
     char *str;
     int err;
     SSL_CTX         *ctx2;
-	SSL_METHOD      *meth2;
+	const SSL_METHOD      *meth2;
 	
 	//Get SSL stuff initialized
 	SSL_library_init(); //Load encryption and hash algs for SSL
@@ -694,7 +697,7 @@ printf("Got here2\n");
 			RETURN_NULL(ssl);
 			
 			//Assign the socket into the SSL structure
-			SSL_set_fd(ssl, fsendsock);
+			SSL_set_fd(ssl, new_fd);
 		printf("here\n");
 			//Perform SSL Handshake on the SSL server
 			err = SSL_accept(ssl);
@@ -787,6 +790,7 @@ printf("Got here2\n");
 			//Send size of file to client
 			//SSL Style!
 			//s = send(new_fd, sizebuffer, sizeof(sizebuffer), 0);
+			printf("Sending filesize %s", sizebuffer);
 			s = SSL_write(ssl, sizebuffer, sizeof(sizebuffer));
 
 			if( s == -1){
@@ -864,7 +868,7 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 	SSL *ssl;
 	int err;
 	SSL_CTX         *ctx3;
-	SSL_METHOD      *meth3;
+	const SSL_METHOD      *meth3;
 	
 	printf("in the getFile func\n");
 	sleep(5);//Wait for client to make connection
@@ -874,7 +878,7 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 	SSL_load_error_strings(); //Load error strings
 	meth3 = SSLv3_method();
 	 /* Create an SSL_CTX structure */
-	ctx3 = SSL_CTX_new(meth3);                        
+	ctx3 = SSL_CTX_new(meth3);
 	RETURN_NULL(ctx3);
 	
 	/* Load the server certificate into the SSL_CTX structure */
@@ -940,12 +944,11 @@ printf("Abotu to try to connect\n");
 	//Create SSL structure
 	ssl = SSL_new(ctx3);
 	RETURN_NULL(ssl);
-	printf("here");
 	//Assign the socket into the SSL structure
 	SSL_set_fd(ssl,recvsockfd);
 	
 	//Perform SSL Handshake on the SSL server
-	err = SSL_accept(ssl);
+	err = SSL_connect(ssl);
 	RETURN_SSL(err);
 	printf("File Getter did the handshake\n");
 	//-----------==================================
@@ -967,7 +970,7 @@ printf("Abotu to try to connect\n");
 		//SSL style!
 		//int rv3 = recv(recvsockfd, filesize, MAXBUFSIZE, 0);
 		int rv3 = SSL_read(ssl, filesize, MAXBUFSIZE);
-	printf("hereeeeeee!\n");
+	printf("here fileszie %s\n", filesize);
 		if(rv3 > 0){
 			//Get size of file
 			char command[CMDSIZE];
@@ -982,7 +985,7 @@ printf("Abotu to try to connect\n");
 				char message[FILELISTSIZE];
 				bzero(&message,sizeof(message));
 				memcpy(message, &filesize[OFFSET1],sizeof(filesize));
-				printf("%s",message);
+				printf("Client error %s",message);
 				SSL_shutdown(ssl);
 				close(recvsockfd);
 				SSL_free(ssl);
@@ -1034,9 +1037,9 @@ printf("Abotu to try to connect\n");
 	FD_ZERO(&readfds2);
 	FD_SET(recvsockfd,&readfds2);
 	selRet = select(FD_SETSIZE, &readfds2, NULL, NULL, &timeout);
-
+	//REcevie the file
 	if ((selRet != -1) && (selRet != 0)) {
-
+	printf("receive the file\n");
 		char directory[1024];
 		bzero(&directory, sizeof(directory));
 		//Receive SSL style!
