@@ -74,7 +74,7 @@ void getCommand(char buffer[MAXBUFSIZE]);
 void sendFile(char filename[CMDSIZE]);
 void getFile(char ipaddress[INET6_ADDRSTRLEN]);
 int verify_client = OFF; //To verify a client sertificate, set ON
-SSL *ssl;
+//SSL *ssl;
 
 void alarmHandler(int sig){
 	sendFileList();
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
 	int err;
 	SSL_CTX         *ctx;
-   // SSL            *ssl;
+    SSL            *ssl;
     SSL_METHOD      *meth;
     X509            *server_cert;
     EVP_PKEY        *pkey;
@@ -238,8 +238,8 @@ int main(int argc, char *argv[])
 	strcpy(clientname,argv[1]);
 
 
-	sendName(); //send name of client to server
-	sendFileList(); //send file list to server
+	sendName(ssl); //send name of client to server
+	sendFileList(ssl); //send file list to server
 
 	//Create thread that waits for commands from the user
 	int r = pthread_create(&th, 0, sendUsrCommands, &ssl);
@@ -380,7 +380,7 @@ void sendUsrCommands(){
 	filename0,size0,filename1,size1,...
 
 */
-void sendFileList(){
+void sendFileList(SSL *ssl){
 	char sndbuffer[MAXBUFSIZE];
 	char filename[CMDSIZE];
 	char list[1024];
