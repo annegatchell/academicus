@@ -209,6 +209,8 @@ int main(int argc,char *argv[])
 		* Bind our local address so that the client can send to us.
 		*/
 		if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
+			err = SSL_shutdown(ssl);
+			RETURN_SSL(err);
 			close(sockfd);
 			perror("server: bind");
 			continue;
@@ -457,7 +459,10 @@ void processNewConnection(SSL_CTX *ctx){
 		}
 
 		printf("Client tried to connect but no room\n");
+		err = SSL_shutdown(ssl);
+		RETURN_SSL(err);
 		close(new_fd);
+		SSL_free(ssl);
 	}
 
 }
@@ -487,6 +492,7 @@ void build_sock_set() {
 void getCommand(char buffer[MAXBUFSIZE], int sockid){
 	char command[CMDSIZE];
 	int index;
+	int err;
 
 	bzero(&command,sizeof(command));
 	index = findIndex(sockid);
@@ -531,7 +537,12 @@ void getCommand(char buffer[MAXBUFSIZE], int sockid){
 	//remove client from list
 	else if(!strcmp(command, EXITCMD)){
 		clientArray[index].valid = 0;
-		close(clientArray[index].sock);
+		err = SSL_shutdown(&clientArray[index].ssl);
+		RETURN_SSL(err);
+		err = close(clientArray[index].sock);
+		RETURN_ERR(err, "close");
+		SSL_free(&clientArray[index].ssl);
+		
 	}
 
 	//Send list of files on server to client
