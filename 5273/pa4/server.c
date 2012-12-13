@@ -289,12 +289,11 @@ int main(int argc,char *argv[])
 //Handle communications
 void connection(int sockid) {
 	int s = sockid;
-
 	char buffer[MAXBUFSIZE];
 	struct timeval;
 	char command[CMDSIZE];
 	int rc = 0;
-
+	int err;
 
 	bzero(buffer, sizeof(buffer));
 	bzero(command, sizeof(command));
@@ -302,16 +301,48 @@ void connection(int sockid) {
 	/*
 		Get message and call getCommand method
 	*/
-	rc = recv(s, buffer, MAXBUFSIZE, MSG_WAITALL);
+	/*rc = recv(s, buffer, MAXBUFSIZE, MSG_WAITALL);
 	if (rc > 0)
 	{
 
 		getCommand(buffer, sockid);
 
+	}*/
+	int index = findIndex(s);
+	SSL *ssl = &clientArray[index].ssl;
+	err = SSL_read(ssl, buffer, sizeof(buffer) -1);
+	printf("Got some ssl socket action!\n");
+	RETURN_SSL(err);
+	if(err > 0){
+		getCommand(buffer, sockid);
 	}
+	//nullify the end of the buffer 
+	//buffer[err] = '\0'
+	
 
 	//If client has disconnected, remove it from list
 	else if(rc == 0){
+		int k;
+		if(index != -1){clientArray[index].valid = 0;}
+		printf("Client %s Closed Socket Connection!\n", clientArray[index].name);
+		//Shut down the server side of the SSL connection
+		err = SSL_shutdown(ssl);
+		RETURN_SSL(err);
+		//Close socket
+		err = close(sockid);
+		RETURN_ERR(err, "close");
+		
+		//Free that SSL structure
+		SSL_free(ssl);
+		
+		//Send new list to everyone
+		for(k = 0; k < 4; k++){
+			if(clientArray[k].valid == 1){
+				sendList(k);
+			}
+		}
+	}
+	/*else if(err == 0){
 		//Client has disconnected
 		int k;
 
@@ -326,7 +357,7 @@ void connection(int sockid) {
 			}
 		}
 
-	}
+	}*/
 }
 
 /*

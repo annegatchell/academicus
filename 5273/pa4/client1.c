@@ -74,6 +74,7 @@ void getCommand(char buffer[MAXBUFSIZE]);
 void sendFile(char filename[CMDSIZE]);
 void getFile(char ipaddress[INET6_ADDRSTRLEN]);
 int verify_client = OFF; //To verify a client sertificate, set ON
+SSL *ssl;
 
 void alarmHandler(int sig){
 	sendFileList();
@@ -92,7 +93,7 @@ int main(int argc, char *argv[])
 
 	int err;
 	SSL_CTX         *ctx;
-    SSL            *ssl;
+   // SSL            *ssl;
     SSL_METHOD      *meth;
     X509            *server_cert;
     EVP_PKEY        *pkey;
@@ -241,7 +242,7 @@ int main(int argc, char *argv[])
 	sendFileList(); //send file list to server
 
 	//Create thread that waits for commands from the user
-	int r = pthread_create(&th, 0, sendUsrCommands, NULL);
+	int r = pthread_create(&th, 0, sendUsrCommands, &ssl);
 	if (r != 0) { fprintf(stderr, "thread create failed\n"); }
 
 	while(1){
@@ -389,6 +390,7 @@ void sendFileList(){
 	int lSize;
 	FILE* fpls;
 	FILE* fp;
+	int err;
 
 
 	bzero(filename,sizeof(filename));
@@ -439,21 +441,26 @@ void sendFileList(){
 	memcpy(&sndbuffer[0], SENDFILES,sizeof(SENDFILES));
 	memcpy(&sndbuffer[OFFSET1], list,sizeof(list));
 
-
-	send(sockfd, sndbuffer, sizeof(sndbuffer), 0);
+	//Send data, SSL style
+	err = SSL_write(ssl, sndbuffer, sizeof(sndbuffer));
+	RETURN_SSL(err);
+	//send(sockfd, sndbuffer, sizeof(sndbuffer), 0);
 
 }
 
 /*
 	Send name of client to server.
 */
-void sendName(){
+void sendName(SSL *ssl){
 	char namebuffer[MAXBUFSIZE];
+	int err;
 
 	memcpy(&namebuffer[0], NAME, sizeof(NAME));
 	memcpy(&namebuffer[OFFSET1], clientname, sizeof(clientname));
 
-	send(sockfd, namebuffer, sizeof(namebuffer), 0);
+	//Send SSL style
+	err = SSL_write(ssl, namebuffer, sizeof(namebuffer));
+	//send(sockfd, namebuffer, sizeof(namebuffer), 0);
 }
 
 /*
