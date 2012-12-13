@@ -50,11 +50,18 @@
 #define NAME "name"
 #define MSG "msg"
 
-#define RSA_SERVER_CERT "server.crt"
+#define RSA_SERVER_CERT "server1.crt"
 #define RSA_SERVER_KEY "privatekey-server1.key"
  
 #define RSA_SERVER_CA_CERT "../ssl_stuff/myCA/certs/server_ca.crt"
 #define RSA_SERVER_CA_PATH "../ssl_stuff/myCA/certs/"
+
+#define ON 1
+#define OFF 0
+
+#define RETURN_NULL(x) if ((x)==NULL) exit(1)
+#define RETURN_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
+#define RETURN_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(1); }
 
 
 //Function Declarations
@@ -78,16 +85,19 @@ typedef struct{
 	char address[INET6_ADDRSTRLEN];
 	char name[512];
 	char files[LISTSIZE];
+	SSL ssl;
 }clientInfo;
 
 clientInfo clientArray[4];
 int sockfd;
 struct sockaddr_storage their_addr; // connector's address information
 fd_set readfds;
+int verify_client = OFF; /* To verify a client certificate, set ON */
 
 int main(int argc,char *argv[])
 {
 	int err;
+	
 	SSL_CTX *ctx;
 	SSL *ssl;
 	SSL_METHOD *meth;
@@ -114,6 +124,8 @@ int main(int argc,char *argv[])
 	strcpy(portnum,argv[1]);
 	
 	//==================================================================
+	//SET UP FOR SSL STructures
+	//==================================================================
 	SSL_library_init(); //Load encryption and hash algs for SSL
 	SSL_load_error_strings(); //Load error strings
 	meth = SSLv3_method();
@@ -123,8 +135,42 @@ int main(int argc,char *argv[])
 		exit(1);
 	}
 	
+	/* Load the server certificate into the SSL_CTX structure */
+    if (SSL_CTX_use_certificate_file(ctx, RSA_SERVER_CERT, SSL_FILETYPE_PEM) <= 0) {
+		ERR_print_errors_fp(stderr);
+		exit(1);
+	}
 	
-	
+	/* Load the private-key corresponding to the server certificate */
+          if (SSL_CTX_use_PrivateKey_file(ctx, RSA_SERVER_KEY, SSL_FILETYPE_PEM) <= 0) {
+              ERR_print_errors_fp(stderr);
+                exit(1);
+    }
+ 
+      /* Check if the server certificate and private-key matches */
+       if (!SSL_CTX_check_private_key(ctx)) {
+			fprintf(stderr,"Private key does not match the certificate public key\n");
+			exit(1);
+    }
+    
+	if(verify_client == ON)
+ 
+        {
+ 
+              /* Load the RSA CA certificate into the SSL_CTX structure */
+                if (!SSL_CTX_load_verify_locations(ctx, RSA_SERVER_CA_CERT, NULL)) {
+ 
+                   ERR_print_errors_fp(stderr);
+                        exit(1);
+            }
+ 
+              /* Set to require peer (client) certificate verification */
+         SSL_CTX_set_verify(ctx,SSL_VERIFY_PEER,NULL);
+ 
+          /* Set the verification depth to 1 */
+               SSL_CTX_set_verify_depth(ctx,1);
+ 
+   }
 
 	//==================================================================================
 	memset(&hints, 0, sizeof hints);
@@ -208,7 +254,7 @@ int main(int argc,char *argv[])
 			//process the new connection
 			if(FD_ISSET(sockfd,&readfds)){
 
-				processNewConnection();
+				processNewConnection(&ctx);
 
 			}
 
@@ -288,7 +334,7 @@ void connection(int sockid) {
 	give them a socket id
 
 */
-void processNewConnection(){
+void processNewConnection(SSL_CTX *ctx){
 	socklen_t sin_size;
 	int new_fd;
 	struct timeval currentTime;
@@ -296,6 +342,8 @@ void processNewConnection(){
 	char ip[INET6_ADDRSTRLEN];
 	int i;
 	int room = 0;
+	SSL *ssl;
+	int err;
 
 	sin_size = sizeof their_addr;
 	new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
@@ -305,6 +353,29 @@ void processNewConnection(){
 
 	inet_ntop(their_addr.ss_family,get_in_addr((struct sockaddr *)&their_addr),ip, sizeof ip);
 	printf("server: got connection from %s\n", ip);
+
+	//Do the SSL handshake----------------------
+	//Create SSL structure
+	ssl = SSL_new(ctx);
+	RETURN_NULL(ssl);
+	
+	//Assign the socket into the SSL structure
+	SSL_set_fd(ssl, new_fd);
+	
+	//Perform SSL Handshake on the SSL server
+	err = SSL_accept(ssl);
+	RETURN_SSL(err);
+	
+	printf("SSL connection using %s\n", SSL_get_cipher(ssl));
+
+	if(verify_client == ON){
+		printf("OD SOMETHINGSAKDLFKSADFLKJ!\n");
+	}
+	else{
+			printf("We aren't verifying the SSL client's certificate.\n");
+	}
+
+//Data EXCHANGE!!! --- receive that message like it's 1991
 
 	//Add client to list if there is room
 	for(i = 0; (i < 4) && (room != 1); i++){
@@ -320,6 +391,7 @@ void processNewConnection(){
 			clientArray[i].valid = 1;
 			clientArray[i].sock = new_fd;
 			clientArray[i].t = time;
+			clientArray[i].ssl = *ssl;
 			strcpy(clientArray[i].address,ip);
 			room = 1;
 		}
