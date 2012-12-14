@@ -47,8 +47,8 @@
 #define DLDIR "Downloaded_Files"
 
 //#define RSA_CLIENT_KEY "../
-#define RSA_CLIENT_CERT "Anne.crt"
-#define RSA_CLIENT_KEY "privatekeyAnne.key"
+#define RSA_CLIENT_CERT "Gary.crt"
+#define RSA_CLIENT_KEY "privatekeyGary.key"
  
 #define RSA_CLIENT_CA_CERT "../ssl_stuff/myCA/certs/myca.crt"
 #define RSA_CLIENT_CA_PATH "../ssl_stuff/myCA/certs/"

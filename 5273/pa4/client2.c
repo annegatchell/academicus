@@ -1,10 +1,10 @@
 /*
- * client.c
+ * client1.c
  *
- 	Ari Summer
- 	Programming Assignment 3
- 	11/16/2012
-	TCP Client
+ 	Anne Gatchell
+ 	Programming Assignment 4
+ 	12/12/2012
+	SSL/TCP Client
  *  
  */
 
@@ -44,11 +44,11 @@
 #define IP "ip"
 #define MSG "msg"
 #define TRANSFERPORT "5050"
-#define DLDIR "../Downloaded_Files"
+#define DLDIR "Downloaded_Files"
 
 //#define RSA_CLIENT_KEY "../
-#define RSA_CLIENT_CERT "client2.crt"
-#define RSA_CLIENT_KEY "privatekey-client2.key"
+#define RSA_CLIENT_CERT "Ben.crt"
+#define RSA_CLIENT_KEY "privatekeyBen.key"
  
 #define RSA_CLIENT_CA_CERT "../ssl_stuff/myCA/certs/myca.crt"
 #define RSA_CLIENT_CA_PATH "../ssl_stuff/myCA/certs/"
@@ -76,8 +76,8 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]);
 int verify_client = OFF; //To verify a client sertificate, set ON
 //SSL *ssl;
 SSL *hackyGlobal;
-SSL_CTX         *ctx;
-const SSL_METHOD      *meth;
+SSL_CTX  *ctx;
+const SSL_METHOD *meth;
 	
 void alarmHandler(int sig){
 	sendFileList(hackyGlobal);
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
                      ERR_print_errors_fp(stderr);
                         exit(1);
         }
- 
+
         /* Check if the client certificate and private-key matches */
         if (!SSL_CTX_check_private_key(ctx)) {
             fprintf(stderr,"Private key does not match the certificate public key\n");
@@ -186,7 +186,6 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "client: failed to connect\n");
 		return 2;
 	}
-	printf("connected!\n");
 
 	inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),s, sizeof s);
 	printf("client: connecting to %s\n", s);
@@ -197,7 +196,6 @@ int main(int argc, char *argv[])
 	ssl = SSL_new(ctx);
 	RETURN_NULL(ssl);
 	hackyGlobal = ssl;
-	printf("here");
 	
 	//Assign the socket into the SSL structure
 	SSL_set_fd(ssl, sockfd);
@@ -273,17 +271,10 @@ int main(int argc, char *argv[])
 			}
 
 			//Determine what was received and what to do with it
-
-
-
 		}
-
 		else if(selRet == -1) {
 			printf("select() failed : \n");
 		}
-
-
-
 	}
 
 	close(sockfd);
@@ -318,13 +309,11 @@ void *sendUsrCommands(void *ssll){
 
 		//Send commands to server based on user commands
 		bzero(&sndbuffer,sizeof(sndbuffer));
-		printf("command is %s\n", command);
 		//Exit client
 		if(!strcmp(command, EXITCMD)){
 
 			memcpy(&sndbuffer[0], EXITCMD,sizeof(EXITCMD));
 			//send(sockfd, sndbuffer, sizeof(sndbuffer), 0);
-			printf("sending: %s\n", sndbuffer);
 			SSL_shutdown(ssl);
 			close(sockfd);
 			exit(0);
@@ -371,13 +360,10 @@ void *sendUsrCommands(void *ssll){
 				//send(sockfd, sndbuffer, sizeof(sndbuffer), 0);
 				err = SSL_write(ssl, sndbuffer, sizeof(sndbuffer));
 				RETURN_SSL(err);
-
 			}
 		}
-
 		else{
 			printf("Invalid Command. Please try again.\n");
-
 		}
 	}
 
@@ -390,7 +376,6 @@ void *sendUsrCommands(void *ssll){
 
 */
 void *sendFileList(void *ssl){
-	printf("NON-HACKY\n");
 	char sndbuffer[MAXBUFSIZE];
 	char filename[CMDSIZE];
 	char list[1024];
@@ -561,32 +546,44 @@ void sendFile(char filename[CMDSIZE]){
 	struct sockaddr_storage their_addr;
 	SSL *ssl;
 	X509            *other_cert;
-    //EVP_PKEY        *pkey;
+    EVP_PKEY        *pkey;
     char *str;
     int err;
-    SSL_CTX         *ctx2;
-	const SSL_METHOD      *meth2;
+	int verify_client = 1;
 	
-	//Get SSL stuff initialized
-	SSL_library_init(); //Load encryption and hash algs for SSL
-	SSL_load_error_strings(); //Load error strings
-	meth2 = SSLv3_method();
-	 /* Create an SSL_CTX structure */
-	ctx2 = SSL_CTX_new(meth2);                        
-	RETURN_NULL(ctx2);
-	
-	
-   /* Load the RSA CA certificate into the SSL_CTX structure */
-   /* This will allow this client to verify the server's     */
-   /* certificate.                                           */
-    if (!SSL_CTX_load_verify_locations(ctx2, RSA_CLIENT_CA_CERT, NULL)) {
-                ERR_print_errors_fp(stderr);
-                exit(1);
+     /* Load the client certificate into the SSL_CTX structure */
+       if (SSL_CTX_use_certificate_file(ctx, RSA_CLIENT_CERT, SSL_FILETYPE_PEM) <= 0) {
+                   ERR_print_errors_fp(stderr);
+                        exit(1);
+            }
+ 
+        /* Load the private-key corresponding to the client certificate */
+        if (SSL_CTX_use_PrivateKey_file(ctx, RSA_CLIENT_KEY, SSL_FILETYPE_PEM) <= 0) {
+                     ERR_print_errors_fp(stderr);
+                        exit(1);
+        }
+
+        /* Check if the client certificate and private-key matches */
+        if (!SSL_CTX_check_private_key(ctx)) {
+            fprintf(stderr,"Private key does not match the certificate public key\n");
+                    exit(1);
+        }
+    
+    if(verify_client){
+		/* Load the RSA CA certificate into the SSL_CTX structure */
+                if (!SSL_CTX_load_verify_locations(ctx, RSA_CLIENT_CA_CERT, NULL)) {
+ 
+                   ERR_print_errors_fp(stderr);
+                        exit(1);
+            }
+ 
+              /* Set to require peer (client) certificate verification */
+         SSL_CTX_set_verify(ctx,SSL_VERIFY_PEER,NULL);
+ 
+          /* Set the verification depth to 1 */
+               SSL_CTX_set_verify_depth(ctx,1);
+ 
     }
-	/* Set flag in context to require peer (server) certificate */
-    /* verification */
-	SSL_CTX_set_verify(ctx2,SSL_VERIFY_PEER,NULL);
-	SSL_CTX_set_verify_depth(ctx2,1);
 	
 	
 	memset(&hints2, 0, sizeof hints2);
@@ -602,7 +599,6 @@ void sendFile(char filename[CMDSIZE]){
 		pthread_mutex_unlock(&mutex);
 		pthread_exit(NULL);
 	}
-printf("Got here1\n");
 	for(p2 = servinfo2; p2 != NULL; p2 = p2->ai_next) {
 		if ((fsendsock = socket(p2->ai_family, p2->ai_socktype,
 				p2->ai_protocol)) == -1) {
@@ -630,7 +626,6 @@ printf("Got here1\n");
 
 		break;
 	}
-printf("Got here2\n");
 	if (p2 == NULL)  {
 		fprintf(stderr, "Client: failed to bind to Transfer Socket\n");
 		close(fsendsock);
@@ -660,7 +655,6 @@ printf("Got here2\n");
 	//add socket to set
 	FD_ZERO(&readfds2);
 	FD_SET(fsendsock,&readfds2);
-	printf("Got here3\n");
 	//Wait for communication on socket
 	int selRet = select(FD_SETSIZE, &readfds2, NULL, NULL, &timeout);
 
@@ -693,12 +687,12 @@ printf("Got here2\n");
 			printf("\nSending File %s to %s\n", filename, ip);
 
 			//create SSL structure
-			ssl = SSL_new(ctx2);
+			ssl = SSL_new(ctx);
 			RETURN_NULL(ssl);
 			
 			//Assign the socket into the SSL structure
 			SSL_set_fd(ssl, new_fd);
-		printf("here\n");
+		    printf("here\n");
 			//Perform SSL Handshake on the SSL server
 			err = SSL_accept(ssl);
 			RETURN_SSL(err);
@@ -707,7 +701,7 @@ printf("Got here2\n");
 		
 			//---GET the SERVER's CERTIFICATE
 			other_cert = SSL_get_peer_certificate(ssl);
-		
+			if(verify_client){
 			if(other_cert != NULL)
 			{
 				printf ("Server certificate:\n");
@@ -729,7 +723,7 @@ printf("Got here2\n");
 				close(fsendsock);
 				SSL_free(ssl);
 				return;
-			}
+			}}
 	
 			bzero(&directory, sizeof(directory));
 			bzero(&sndbuffer,sizeof(sndbuffer));
@@ -867,36 +861,52 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 	int lSize = 0;
 	SSL *ssl;
 	int err;
-	SSL_CTX         *ctx3;
-	const SSL_METHOD      *meth3;
+	//SSL_CTX *ctx3;
+	//const SSL_METHOD *meth3;
+	X509 *client_cert;
+	EVP_PKEY *pkey;
+	int verifyWhoIAmConnectingTo = 1;
 	
 	printf("in the getFile func\n");
 	sleep(5);//Wait for client to make connection
 	
 	//Get SSL stuff initialized
-	SSL_library_init(); //Load encryption and hash algs for SSL
-	SSL_load_error_strings(); //Load error strings
-	meth3 = SSLv3_method();
-	 /* Create an SSL_CTX structure */
-	ctx3 = SSL_CTX_new(meth3);
-	RETURN_NULL(ctx3);
+	
 	
 	/* Load the server certificate into the SSL_CTX structure */
-    if (SSL_CTX_use_certificate_file(ctx3, RSA_CLIENT_CERT, SSL_FILETYPE_PEM) <= 0) {
+    if (SSL_CTX_use_certificate_file(ctx, RSA_CLIENT_CERT, SSL_FILETYPE_PEM) <= 0) {
 		ERR_print_errors_fp(stderr);
 		exit(1);
 	}
 	
 	/* Load the private-key corresponding to the server certificate */
-          if (SSL_CTX_use_PrivateKey_file(ctx3, RSA_CLIENT_KEY, SSL_FILETYPE_PEM) <= 0) {
+          if (SSL_CTX_use_PrivateKey_file(ctx, RSA_CLIENT_KEY, SSL_FILETYPE_PEM) <= 0) {
               ERR_print_errors_fp(stderr);
                 exit(1);
     }
  
       /* Check if the server certificate and private-key matches */
-       if (!SSL_CTX_check_private_key(ctx3)) {
+       if (!SSL_CTX_check_private_key(ctx)) {
 			fprintf(stderr,"Private key does not match the certificate public key\n");
 			exit(1);
+    }
+    
+    if(verifyWhoIAmConnectingTo){
+    /* Load the RSA CA certificate into the SSL_CTX structure */
+        /* This will allow this client to verify the server's     */
+        /* certificate.                                           */
+
+
+      if (!SSL_CTX_load_verify_locations(ctx, RSA_CLIENT_CA_CERT, NULL)) {
+                ERR_print_errors_fp(stderr);
+                exit(1);
+    }
+    /* Set flag in context to require peer (server) certificate */
+        /* verification */
+ 
+        SSL_CTX_set_verify(ctx,SSL_VERIFY_PEER,NULL);
+ 
+        SSL_CTX_set_verify_depth(ctx,1);
     }
 
 	hintsr2.ai_family = AF_UNSPEC;
@@ -916,12 +926,13 @@ void getFile(char ipaddress[INET6_ADDRSTRLEN]){
 		}
 
 		int c;
-printf("Abotu to try to connect\n");
+		printf("About to try to connect\n");
 		c = connect(recvsockfd, pr2->ai_addr, pr2->ai_addrlen);
 		if(c == 0){
+			printf("Successful connection\n");
 			break;
 		}
-		printf("Connected!\n");
+		
 		if(c == -1){
 			printf("Machine hosting this file is not available at this moment.\n");
 			close(recvsockfd);
@@ -942,11 +953,10 @@ printf("Abotu to try to connect\n");
 	//GETTER MUST================================================
 	//Do the SSL handshake----------------------
 	//Create SSL structure
-	ssl = SSL_new(ctx3);
+	ssl = SSL_new(ctx);
 	RETURN_NULL(ssl);
 	//Assign the socket into the SSL structure
 	SSL_set_fd(ssl,recvsockfd);
-	
 	//Perform SSL Handshake on the SSL server
 	err = SSL_connect(ssl);
 	RETURN_SSL(err);
@@ -1045,7 +1055,7 @@ printf("Abotu to try to connect\n");
 		//Receive SSL style!
 		//int rv3 = recv(recvsockfd, filebuffer, MAXBUFSIZE, 0);
 		int rv3 = SSL_read(ssl, filebuffer, MAXBUFSIZE);
-
+		
 		if(rv3 > 0){
 			//Get file
 			FILE* fpr;
@@ -1053,10 +1063,10 @@ printf("Abotu to try to connect\n");
 			strcat(directory,"/");
 			strncat(directory,dlfile,strlen(dlfile));
 			fpr = fopen(directory,"w");
-
+			printf("HERE!\n");
 			//Write file data to open file
 			fwrite(filebuffer,1,lSize,fpr);
-
+			printf("HERE!\n");
 			//Close file
 			fclose(fpr);
 		}

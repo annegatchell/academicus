@@ -1,10 +1,10 @@
 /*
  * server.c
  *
- 	Ari Summer
- 	Programming Assignment 3
- 	11/16/2012
-	TCP Client
+ 	Anne Gatchell
+ 	Programming Assignment 4
+ 	12/12/2012
+	SSL/TCP Client
  */
 
 #include <stdio.h>
@@ -314,15 +314,11 @@ void connection(int sockid) {
 	int index = findIndex(s);
 	SSL *ssl = &clientArray[index].ssl;
 	err = SSL_read(ssl, buffer, sizeof(buffer) -1);
-	printf("Got some ssl socket action!\n");
 	RETURN_SSL(err);
 	buffer[err] = '\0';
-	printf("command is %s", buffer);
 	if(err > 0){
 		getCommand(buffer, sockid);
 	}
-	//nullify the end of the buffer 
-	//buffer[err] = '\0'
 	
 
 	//If client has disconnected, remove it from list
@@ -338,7 +334,6 @@ void connection(int sockid) {
 		RETURN_ERR(err, "close");
 		
 		//Free that SSL structure
-		printf("chaos1\n");
 		//SSL_free(ssl);
 		
 		//Send new list to everyone
@@ -348,22 +343,6 @@ void connection(int sockid) {
 			}
 		}
 	}
-	/*else if(err == 0){
-		//Client has disconnected
-		int k;
-
-		int j = findIndex(s);
-		if (j != -1){clientArray[j].valid = 0;}
-		printf("Client %s Closed Socket Connection!\n",clientArray[j].name);
-		close(sockid);
-
-		for(k = 0; k < 4; k++){
-			if(clientArray[k].valid == 1){
-				sendList(k);
-			}
-		}
-
-	}*/
 }
 
 /*
@@ -395,7 +374,6 @@ void processNewConnection(SSL_CTX *ctx){
 	//Create SSL structure
 	ssl = SSL_new(ctx);
 	RETURN_NULL(ssl);
-	printf("here");
 	
 	//Assign the socket into the SSL structure
 	SSL_set_fd(ssl, new_fd);
@@ -406,12 +384,6 @@ void processNewConnection(SSL_CTX *ctx){
 	
 	printf("SSL connection using %s\n", SSL_get_cipher(ssl));
 
-	if(verify_client == ON){
-		printf("OD SOMETHINGSAKDLFKSADFLKJ!\n");
-	}
-	else{
-			printf("We aren't verifying the SSL client's certificate.\n");
-	}
 
 //Data EXCHANGE!!! --- receive that message like it's 1991
 
@@ -463,7 +435,6 @@ void processNewConnection(SSL_CTX *ctx){
 		err = SSL_shutdown(ssl);
 		RETURN_SSL(err);
 		close(new_fd);
-		printf("chaos 2\n");
 		SSL_free(ssl);
 	}
 
@@ -543,7 +514,6 @@ void getCommand(char buffer[MAXBUFSIZE], int sockid){
 		RETURN_SSL(err);
 		err = close(clientArray[index].sock);
 		RETURN_ERR(err, "close");
-		printf("chaos 3\n");
 		SSL_free(&clientArray[index].ssl);
 		
 	}
