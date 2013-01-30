@@ -1,14 +1,15 @@
-CFLAGS = -Wall -g
-
+CFLAGS = -Wall -g -pthread
+SSLFLAGS = -lssl -lcrypto
 
 SRCS = client.c server.c
 LOGS = client-log.txt server-log.txt
-CLIENT = clientpa4/source/client
-SERVER = serverpa4/source/server
-CLIENT_SRC = clientpa4/source/client.c
-SERVER_SRC = serverpa4/source/server.c
-CLIENT_OBJ = clientpa4/source/client.o
-SERVER_OBJ = serverpa4/source/server.o
+CLIENT1 = client1/client
+CLIENT2 = client2/client
+SERVER = serverpa4/server
+CLIENT_SRC = client.c
+SERVER_SRC = server.c
+CLIENT_OBJ = client.o
+SERVER_OBJ = server.o
 
 MOVE_FILES = ${HELPER} ${SRCS} Makefile client1/
 TRANSFER = scp
@@ -18,11 +19,9 @@ SSHFLAGS = -C #Compress data
 REMOTE = anga2518@elra-03.cs.colorado.edu:/home/guests/anga2518/Documents/PA4/
 ELRA = anga2518@elra-03.cs.colorado.edu
 
-
-
 #UNAME := $(shell uname)
 
-all: $(CLIENT) $(SERVER)
+all: $(CLIENT1) $(CLIENT2) $(SERVER)
 
 move: ${MOVE_FILES}
 	${TRANSFER} -r ${MOVE_FILES} ${REMOTE}
@@ -30,21 +29,24 @@ move: ${MOVE_FILES}
 compile: 
 	${SSH} ${SSHFLAGS} ${ELRA} "cd Documents/PA4 && make client-exes"
 
-$(CLIENT): $(CLIENT_OBJ)
-	$(CC) $(CFLAGS) $(CLIENT_OBJ) -o $(CLIENT)
+client1/client: $(CLIENT_OBJ)
+	$(CC) $(CFLAGS) $(SSLFLAGS) $(CLIENT_OBJ) -o $(CLIENT1)
+	
+client2/client: $(CLIENT_OBJ)
+	$(CC) $(CFLAGS) $(SSLFLAGS) $(CLIENT_OBJ) -o $(CLIENT2)
 
 $(CLIENT_OBJ): $(CLIENT_SRC)
-	$(CC) $(CFLAGS) -c $(CLIENT_SRC) -o $(CLIENT_OBJ)
+	$(CC) $(CFLAGS) $(SSLFLAGS) -c $(CLIENT_SRC) -o $(CLIENT_OBJ)
 
 $(SERVER): $(SERVER_OBJ)
-	$(CC) $(CFLAGS) $(SERVER_OBJ) -o $(SERVER)
+	$(CC) $(CFLAGS) $(SSLFLAGS) $(SERVER_OBJ) -o $(SERVER)
 
 $(SERVER_OBJ): $(SERVER_SRC)
-	$(CC) $(CFLAGS) -c $(SERVER_SRC) -o ${SERVER_OBJ}
+	$(CC) $(CFLAGS) $(SSLFLAGS) -c $(SERVER_SRC) -o ${SERVER_OBJ}
 
 
 
 #${OBJS}: ${HELPER}
 
 clean:
-	rm *.o ${CLIENT} ${SERVER} clientpa4/Downloaded_Files/*
+	rm *.o $(CLIENT1) $(CLIENT2) $(SERVER)

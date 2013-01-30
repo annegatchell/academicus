@@ -46,6 +46,8 @@
 #define TRANSFERPORT "5050"
 #define DLDIR "../Downloaded_Files"
 
+//#define RSA_CLIENT_KEY "../
+
 int sockfd;
 char shareddir[100];
 char clientname[20];
