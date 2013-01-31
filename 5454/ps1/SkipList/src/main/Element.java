@@ -1,13 +1,14 @@
-public class Element{
-	private Element[] ptrs;
-	private int key;
-	private Object data;
+public class Element<K, T>{
+	private Link topLevel;
+	private int height;
+	private K key;
+	private T data;
 
 	//General constructor
-	public Element(int k, Object d, int level){
+	public Element(K k, T d, int level){
 		key = k;
 		data = d;
-		ptrs = new Element[level];
+		
 	}
 
 	//Constructor for copying an array of pointers
@@ -15,4 +16,19 @@ public class Element{
 	//public Element(Element[] ptr){
 
 	//}
+
+	public void setTopLevel(Link tL){
+		topLevel = tL;
+	}
+
+	public Link getTopLevel(){
+
+	}
+
+	public K getKey(){
+		return key;
+	}
+	public void setKey(K k){
+		key = k;
+	}
 }
