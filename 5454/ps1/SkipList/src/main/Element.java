@@ -8,7 +8,6 @@ public class Element<K, T>{
 	public Element(K k, T d, int level){
 		key = k;
 		data = d;
-		
 	}
 
 	//Constructor for copying an array of pointers
@@ -22,7 +21,7 @@ public class Element<K, T>{
 	}
 
 	public Link getTopLevel(){
-
+		return topLevel;
 	}
 
 	public K getKey(){

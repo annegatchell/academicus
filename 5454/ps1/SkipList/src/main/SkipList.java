@@ -6,7 +6,7 @@ public class SkipList{
 	public SkipList(float probability, int maxLev){
 		p = probability;
 		maxLevel = maxLevel;
-		header = new Element(null, null);
+		//header = new Element(null, null);
 	}
 
 
