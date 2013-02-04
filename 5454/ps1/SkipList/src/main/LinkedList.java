@@ -54,33 +54,33 @@ public class LinkedList<K extends Comparable<K>, T>{
 	//Create a new linked list of nulls
 	public LinkedList(int l){
 		length = l;
-		root = new Link<K, T>(l-1);
+		root = new Link<K, T>(l);
 		current = root;
 		for(int i = 1; i < length; i++){
-			current.setNextLevelDown(new Link<K, T>(l-1-i));
+			current.setNextLevelDown(new Link<K, T>(l-i));
 			current = current.getNextLevelDown();
 		}
 		current = root;
 	}
 
-	public void growListByNumElementsAtRoot(int len){
-		//Update length
-		length = length + len;
-		current = root;
-		Link<K, T> beginning = new Link<K, T>(length-1);
-		Link<K, T> temp = beginning;
-		for(int i = 1; i < len; i++){
-			temp.setNextLevelDown(new Link<K, T>(length-1-i));
-			temp = temp.getNextLevelDown();
-		}
-		//Point to the current root
-		temp.setNextLevelDown(root);
-		//Reset root to be the beginning of the list again
-		root = beginning;
-		//Set current to be the root
-		current = root;
+	// public void growListByNumElementsAtRoot(int len){
+	// 	//Update length
+	// 	length = length + len;
+	// 	current = root;
+	// 	Link<K, T> beginning = new Link<K, T>(length-1);
+	// 	Link<K, T> temp = beginning;
+	// 	for(int i = 1; i < len; i++){
+	// 		temp.setNextLevelDown(new Link<K, T>(length-1-i));
+	// 		temp = temp.getNextLevelDown();
+	// 	}
+	// 	//Point to the current root
+	// 	temp.setNextLevelDown(root);
+	// 	//Reset root to be the beginning of the list again
+	// 	root = beginning;
+	// 	//Set current to be the root
+	// 	current = root;
 		
-	}
+	// }
 
 	public void setNextLink(Link<K, T> l){
 		//Should I check if null or not to make sure it will be 
@@ -136,7 +136,6 @@ public class LinkedList<K extends Comparable<K>, T>{
 	public static void main(String[] args){
 		LinkedList<Integer, String> lNull4 = new LinkedList<>(4);
 		Link<Integer, String> initialStartOfList = lNull4.getRoot();
-        lNull4.growListByNumElementsAtRoot(4);
         //Advance two links to see if that will be the root
         lNull4.advanceCurrent(); // should be link 1
         lNull4.advanceCurrent(); // should be link 2, same as old root

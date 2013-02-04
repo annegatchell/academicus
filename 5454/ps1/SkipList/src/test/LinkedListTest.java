@@ -82,18 +82,18 @@ public class LinkedListTest {
 
     // }
 
-    @Test
-    public void testGrowLinkedList(){
-        Link<Integer, String> initialStartOfList = lNull4.getRoot();
-        lNull4.growListByNumElementsAtRoot(2);
-        assertEquals("The list should have 6 elements", 6, lNull4.getLength());
-        assertNotSame("The new root shouldn't equal the old one", initialStartOfList, lNull4.getRoot());
-        //Advance two links to see if that will be the root
-        lNull4.advanceCurrent(); // should be link 1
-        lNull4.advanceCurrent(); // should be link 2, same as old root
-        assertSame("The current pointer and the old root should be the same", initialStartOfList, lNull4.getCurrentLink());
+    // @Test
+    // public void testGrowLinkedList(){
+    //     Link<Integer, String> initialStartOfList = lNull4.getRoot();
+    //     lNull4.growListByNumElementsAtRoot(2);
+    //     assertEquals("The list should have 6 elements", 6, lNull4.getLength());
+    //     assertNotSame("The new root shouldn't equal the old one", initialStartOfList, lNull4.getRoot());
+    //     //Advance two links to see if that will be the root
+    //     lNull4.advanceCurrent(); // should be link 1
+    //     lNull4.advanceCurrent(); // should be link 2, same as old root
+    //     assertSame("The current pointer and the old root should be the same", initialStartOfList, lNull4.getCurrentLink());
 
-    }
+    // }
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main("src.test.LinkedListTest");
