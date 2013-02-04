@@ -50,7 +50,20 @@ public class LinkedListTest {
 
     @Test
     public void testSetUpNewLinkedListFromOld(){
-        
+        LinkedList<Integer, String> lNull4Copy = new LinkedList<Integer, String>(4, lNull4);
+        assertSame("root, 0", lNull4.getCurrentLink(), lNull4Copy.getCurrentLink());
+        lNull4.advanceCurrent();
+        lNull4Copy.advanceCurrent();
+        assertSame("1", lNull4.getCurrentLink(), lNull4Copy.getCurrentLink()); 
+        lNull4.advanceCurrent();
+        lNull4Copy.advanceCurrent();
+        assertSame("2", lNull4.getCurrentLink(), lNull4Copy.getCurrentLink()); 
+        lNull4.advanceCurrent();
+        lNull4Copy.advanceCurrent();
+        assertSame("3", lNull4.getCurrentLink(), lNull4Copy.getCurrentLink()); 
+        lNull4.advanceCurrent();
+        lNull4Copy.advanceCurrent();
+        assertSame("null", lNull4.getCurrentLink(), lNull4Copy.getCurrentLink()); 
     }
 
     @Test

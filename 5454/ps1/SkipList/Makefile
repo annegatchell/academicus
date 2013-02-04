@@ -14,7 +14,7 @@ ALL_CLASSES = $(MAIN_CLASSES) $(TEST_CLASSES)
 .PHONY: all clean test main testsRun
 
 all: test main
-testsRun: test runTests
+testsRun: test main runTests
 test: $(TEST_CLASSES)
 main: $(MAIN_CLASSES)
 
