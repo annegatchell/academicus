@@ -40,7 +40,7 @@ public class SkipList<K extends Comparable<K>, T>{
 		return header.getData();
 	}
 
-	public void insert(K searchKey, T newValue){
+	public Element<K, T> insert(K searchKey, T newValue){
 		LinkedList<K, T> update = new LinkedList<>(maxLevel);
 		Element<K, T> x = header;
 		K key;
@@ -52,47 +52,64 @@ public class SkipList<K extends Comparable<K>, T>{
 			if(x.getCurrentLevelNum() == maxLevel -1){
 				update.setRoot(x.getCurrentLevelLink());
 			}
-			System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
-			System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
+			//System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
+			//System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
 			update.advanceCurrent();
 			x.advanceCurrentLevel();
 		}
-		System.out.println("HERE");
+		//System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
+
 
 /**** Purely code to test *****/
 		update.resetCurrentLinkToRoot();
 		while(update.getCurrentLinkNum() > 0){
-			System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
+			//System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
 			update.advanceCurrent();
 		}
-		System.out.println("HERE");
+		//System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
+		
 /**************/
 
 		x = x.getNextElementForCurrentLevel();
-		if(x.getKey().compareTo(searchKey) == 0){
+		if(x != null && x.getKey().compareTo(searchKey) == 0){
 			x.setData(newValue);
 		}else{
 			int v = randomLevel();
+			System.out.println("Level generated: "+v);
 			if(v > level){
 				level = v;
 			}
-			x = new Element<K, T>(searchKey, newValue, v);
+			x = new Element<K, T>(searchKey, newValue, v+1);
 			update.resetCurrentLinkToRoot();
-			for(int i = maxLevel-1; i > -1; i--){
-				if(i <= v){
+			int lev;
+			while((lev = update.getCurrentLinkNum()) > 0){
+				//System.out.println("lev "+ lev);
+				if(lev < v){
+					//System.out.println("HEREin");
 					x.setNextElementForCurrentLevel(update.getCurrentLinkNextElement());
 					update.setCurrentLinkNextElement(x);
+					x.advanceCurrentLevel();
 				}
-				x.advanceCurrentLevel();
 				update.advanceCurrent();
 			}
+			//Set the 0th level
+			if(lev < v){
+				//System.out.println("HERE lev "+lev);
+				x.setNextElementForCurrentLevel(update.getCurrentLinkNextElement());
+				update.setCurrentLinkNextElement(x);
+			}
+			update.advanceCurrent();
 
+			numElements++;
+			x.resetCurrentLevelToRoot();
+			header.resetCurrentLevelToRoot();
 		}
+		return x;
 
 	}
 
 	public int randomLevel(){
-		int v = 1;
+		int v = 0;
 		Random rand = new Random();
 		//random value between [0...1)
 		while (rand.nextDouble() < p && v < maxLevel){

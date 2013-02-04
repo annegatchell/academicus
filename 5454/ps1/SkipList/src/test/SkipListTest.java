@@ -33,14 +33,23 @@ public class SkipListTest{
     @Test
     public void testInsertion(){
     	test1 = new SkipList<>(0.5f, 16);
-    	test1.insert(2,"2");
-    	// Element<Integer, String> current = test1.getHeader();
+    	Element<Integer, String> inserted2 = test1.insert(2,"2");
+    	Element<Integer, String> current = test1.getHeader();
+    	System.out.println("inserted element 2 "+inserted2 + " " + inserted2.getKey() + " " + current);
     	// current.advanceToBottomLevel();
-    	// assertEquals(Integer.valueOf(2),current.getNextElementKeyForCurrentLevel());
 
-    	// current.resetCurrentLevelToRoot();
-    	// test1.insert(1, "1");
-    	// current.advanceToBottomLevel();
+
+		// while(current.getCurrentLevelNum() > 0){
+		// 	current.advanceCurrentLevel();
+		// 	System.out.println(current.getCurrentLevelNum() + " " + current.getNextElementForCurrentLevel());
+		// }
+		current.advanceToBottomLevel();
+		current = current.getNextElementForCurrentLevel();
+		assertSame("Should be at the new element we inserted", inserted2, current);
+		System.out.println("At current level... "+ current.getCurrentLevelNum());
+  //   	test1.insert(1, "1");
+  //   	current = test1.getHeader();
+		// current.advanceToBottomLevel();
     	// assertEquals(Integer.valueOf(1),current.getNextElementKeyForCurrentLevel());
     	// current = current.getNextElementForCurrentLevel();
     	// current.advanceToBottomLevel();

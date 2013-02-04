@@ -43,6 +43,9 @@ public class Element<K extends Comparable<K>, T>{
 	}
 
 	public K getNextElementKeyForCurrentLevel(){
+		if(levels.getCurrentLinkNextElement() == null){
+			return null;
+		}
 		return levels.getCurrentLinkNextKey();
 	}
 
