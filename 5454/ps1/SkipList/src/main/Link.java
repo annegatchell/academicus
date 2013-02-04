@@ -16,6 +16,12 @@ public class Link<K, T>{
 	// 	nextLevelDown = null;
 	// }
 
+	public Link(int n, Element<K, T> nextE){
+		nextElement = nextE;
+		nextLevelDown = nextL;
+		num = n;
+	}
+
 	public Link(Element<K, T> nextE, Link<K, T> nextL, int n){
 		nextElement = nextE;
 		nextLevelDown = nextL;

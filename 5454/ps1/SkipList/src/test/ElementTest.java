@@ -42,6 +42,8 @@ public class ElementTest {
         assertNull(nullElemIntString5.advanceCurrentLevel());
     }
 
+    
+
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main("src.test.ElementTest");
     }

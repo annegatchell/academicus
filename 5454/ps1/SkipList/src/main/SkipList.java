@@ -41,6 +41,14 @@ public class SkipList<K, T>{
 	public void insert(K searchKey, T newValue){
 		Element<K, T> update = new Element<>(null, null, maxLevel);
 		Element<K, T> x = header;
+		K key;
+		for(int i = maxLevel-1; i > -1; i--){
+			key = x.getNextElementKeyForCurrentLevel();
+			while(key != null && key < searchKey){
+				x = x.getNextElementForCurrentLevel();
+			}
+			update
+		}
 
 	}
 
@@ -57,8 +65,24 @@ public class SkipList<K, T>{
 
 	public void traverseInOrderAndPrintKeys(){
 		Element<K, T> current = header;
-		
+		current.advanceToBottomLevel();
+		while(current.getNextElementKeyForCurrentLevel() != null){
+			current = current.getNextElementForCurrentLevel();
+			System.out.print(current.getKey());
+			current.advanceToBottomLevel();
+		}
 	}
 
+	public Element<K, T> getHeader(){
+		return header;
+	}
+
+	public int getMaxLevel(){
+		return maxLevel;
+	}
+
+	public int getNumElements(){
+		return numElements;
+	}
 
 }

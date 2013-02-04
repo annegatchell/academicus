@@ -23,6 +23,13 @@ public class Element<K, T>{
 		levels = lst;
 	}
 
+	public Element(K k, T d, Element<K, T>[] update, int height){
+		key = k;
+		data = d;
+		height = height;
+		levels = new LinkedList<>(height, elems);
+	}
+
 	public int getCurrentLevelNum(){
 		return levels.getCurrentLinkNum();
 	}

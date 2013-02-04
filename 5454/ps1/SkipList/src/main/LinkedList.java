@@ -12,6 +12,17 @@ public class LinkedList<K, T>{
 		length = l;
 	}
 
+	public LinkedList(int l, Element<K, T>[] elems){
+		length = l;
+		root = new Link<>(length-1, elems[length-1]);
+		current = root;
+		for(int i = length - 2; i > -1; i--){
+			current.setNextLevelDown(i, elems[i]);
+			current = current.getNextLevelDown();
+		}
+		current = root;
+	}
+
 	//Set up the root of a linked list
 	// public LinkedList(int l, Link<K, T> lL){
 	// 	root = lL;

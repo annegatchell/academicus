@@ -8,7 +8,8 @@ import org.junit.runner.RunWith;
 	src.test.TestInstantiation.class, 
 	src.test.LinkedListTest.class,
 	src.test.LinkTest.class,
-	src.test.ElementTest.class
+	src.test.ElementTest.class,
+	src.test.SkipListTest.class
 })
 public class AllMyTests {
   //nothing
