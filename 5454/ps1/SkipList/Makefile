@@ -1,10 +1,10 @@
 JCC = javac
 JFLAGS = -g
 
-MAIN_SRCS = main/*.java
+MAIN_SRCS = src/main/*.java
 MAIN_CLASSES = $(MAIN_SRCS:.java=.class)
 
-TEST_SRCS = test/*.java
+TEST_SRCS = src/test/*.java
 TEST_CLASSES = $(TEST_SRCS:.java=.class)
 TEST_EXE = $(TEST_SRCS:.java=)
 
@@ -19,7 +19,7 @@ test: $(TEST_CLASSES)
 main: $(MAIN_CLASSES)
 
 runTests: $(TEST_EXE)
-	java test.AllTests
+	java src.test.AllTests
 
 $(TEST_CLASSES): $(TEST_SRCS)
 	$(JCC) $(JFLAGS) $(TEST_SRCS)

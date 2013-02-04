@@ -1,3 +1,5 @@
+package src.main;
+
 public class Link<K, T>{
 	private Element<K, T> nextElement;
 	private Link<K, T> nextLevelDown;
@@ -14,7 +16,6 @@ public class Link<K, T>{
 
 	public void setNextElement(Element<K, T> nextE){
 		nextElement = nextE;
-
 	}
 
 	public Element<K, T> getNextElement(){

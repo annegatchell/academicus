@@ -1,4 +1,4 @@
-package test;
+package src.test;
 
 import org.junit.*;
 import static org.junit.Assert.*;
@@ -12,6 +12,6 @@ public class TestInstantiation{
     }
 
     public static void main(String args[]) {
-      	org.junit.runner.JUnitCore.main("test.TestInstantiation");
+      	org.junit.runner.JUnitCore.main("src.test.TestInstantiation");
     }
 }
