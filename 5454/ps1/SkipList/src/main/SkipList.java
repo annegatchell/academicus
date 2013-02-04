@@ -46,8 +46,9 @@ public class SkipList<K extends Comparable<K>, T>{
 		Element<K, T> x = header;
 		K key;
 		header.resetCurrentLevelToRoot();
+		int lev = x.getCurrentLevelNum();
 		//Go from top level down to level 1
-		while(x.getCurrentLevelNum() > 1){
+		while(lev > 0){
 			//If the next element at this level is not null and is less than the key, advance
 			while(x.getNextElementForCurrentLevel() != null && x.getNextElementKeyForCurrentLevel().compareTo(searchKey) < 0){
 				x = x.getNextElementForCurrentLevel();
@@ -61,13 +62,19 @@ public class SkipList<K extends Comparable<K>, T>{
 			// System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
 			// System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
 			//Advance to the next level down in our update list as well as our current element
-			update.advanceCurrent();
-			x.advanceCurrentLevel();
+			if(lev > 1){
+				update.advanceCurrent();
+				x.advanceCurrentLevel();
+				lev = x.getCurrentLevelNum();
+			}
+			else
+				lev--;
 		}
+
 		// System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
 
 
-		/**** Purely code to test *****/
+/**** Purely code to test *****/
 		// update.resetCurrentLinkToRoot();
 		// while(update.getCurrentLinkNum() > 1){
 		// 	System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
@@ -75,14 +82,32 @@ public class SkipList<K extends Comparable<K>, T>{
 		// }
 		// System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
 		
-		/**************/
+/**************/
 		//Go to the next element
 		x = x.getNextElementForCurrentLevel();
-		//If this is indeed the key we are trying to delete
+		//If key == our key to delete, we can delete it
 		if(x != null && x.getKey().compareTo(searchKey) == 0){
-
+			
+			//Go to the top of the update list, attach the new vector
+			update.resetCurrentLinkToRoot();
+			lev = update.getCurrentLinkNum();
+			while(lev > 0){
+				//System.out.println("lev "+ lev);
+				//When we hit level v, start splicing in the new element x
+				if(update.getCurrentLinkNextElement() == x){
+					update.setCurrentLinkNextElement(x.getNextElementForCurrentLevel());
+				}
+				if(lev > 1){
+					update.advanceCurrent();
+					lev = update.getCurrentLinkNum();
+				}else lev--;
+			}
+			header.resetCurrentLevelToRoot();
+			numElements--;
 		}
-
+			
+			//Reset current pointers
+		header.resetCurrentLevelToRoot();
 	}
 
 	public Element<K, T> insert(K searchKey, T newValue){
@@ -103,8 +128,8 @@ public class SkipList<K extends Comparable<K>, T>{
 			if(x.getCurrentLevelNum() == maxLevel){
 				update.setRoot(x.getCurrentLevelLink());
 			}
-			System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
-			System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
+			// System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
+			// System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
 			//Advance to the next level down in our update list as well as our current element
 			if(lev > 1){
 				update.advanceCurrent();
@@ -145,7 +170,7 @@ public class SkipList<K extends Comparable<K>, T>{
 			update.resetCurrentLinkToRoot();
 			lev = update.getCurrentLinkNum();
 			while(lev > 0){
-				System.out.println("lev "+ lev);
+				// System.out.println("lev "+ lev);
 				//When we hit level v, start splicing in the new element x
 				if(lev <= v){
 					// System.out.println("HEREin");

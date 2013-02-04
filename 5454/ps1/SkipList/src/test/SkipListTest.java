@@ -87,6 +87,64 @@ public class SkipListTest{
 
     @Test
     public void testDeletion(){
+    	    	test1 = new SkipList<>(0.5f, 16);
+    	Element<Integer, String> inserted2 = test1.insert(2,"2");
+    	Element<Integer, String> current = test1.getHeader();
+    	System.out.println("inserted element 2 "+inserted2 + " " + inserted2.getKey() + " into " + current);
+		
+		System.out.println("FIRST INSERTION element 2 " + current);
+		System.out.println(current.getCurrentLevelNum() + " " + current.getNextElementForCurrentLevel());
+		while(current.getCurrentLevelNum() > 1){
+			current.advanceCurrentLevel();
+			System.out.println(current.getCurrentLevelNum() + " " + current.getNextElementForCurrentLevel());
+		}
+		current.resetCurrentLevelToRoot();
+		current.advanceToBottomLevel();
+		current = current.getNextElementForCurrentLevel();
+		assertSame("(1) Should be at the new element 2 we inserted first", inserted2, current);
+		System.out.println("At current level... "+ current.getCurrentLevelNum());
+
+		current = test1.getHeader();
+    	Element<Integer, String> inserted1 = test1.insert(1, "1");
+    	System.out.println("inserted element 1 "+inserted1 + " " + inserted1.getKey() + " into " + current);
+
+    	System.out.println("SECOND INSERTION, header " + current);
+		System.out.println(current.getCurrentLevelNum() + " " + current.getNextElementForCurrentLevel());
+		while(current.getCurrentLevelNum() > 1){
+			current.advanceCurrentLevel();
+			System.out.println(current.getCurrentLevelNum() + " " + current.getNextElementForCurrentLevel());
+		}
+
+		current.resetCurrentLevelToRoot();
+		current.advanceToBottomLevel();
+		// System.out.println(current.getCurrentLevelNum() + " bottom " + current.getNextElementForCurrentLevel());
+		current = current.getNextElementForCurrentLevel();
+
+		System.out.println("SECOND INSERTION, element 1 " + current);
+		System.out.println(current.getCurrentLevelNum() + " " + current.getNextElementForCurrentLevel());
+		while(current.getCurrentLevelNum() > 1){
+			current.advanceCurrentLevel();
+			System.out.println(current.getCurrentLevelNum() + " " + current.getNextElementForCurrentLevel());
+		}
+
+		assertSame("(2)Should be at the new element 1 we inserted second", inserted1, current);
+    	assertEquals(Integer.valueOf(1),current.getKey());
+    	current.advanceToBottomLevel();
+    	// System.out.println(current.getCurrentLevelNum() + " bottom " + current.getNextElementForCurrentLevel());
+
+
+    	current = current.getNextElementForCurrentLevel();
+    	assertSame("(2)Should be at the new element 2 we inserted first", inserted2, current);
+    	assertEquals(Integer.valueOf(2),current.getKey());
+
+    	test1.delete(1);
+    	current = test1.getHeader();
+    	System.out.println("FIRST DELETION of 1, header " + current);
+		System.out.println(current.getCurrentLevelNum() + " " + current.getNextElementForCurrentLevel());
+		while(current.getCurrentLevelNum() > 1){
+			current.advanceCurrentLevel();
+			System.out.println(current.getCurrentLevelNum() + " " + current.getNextElementForCurrentLevel());
+		}
 
     }
 
