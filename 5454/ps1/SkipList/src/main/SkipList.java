@@ -41,7 +41,7 @@ public class SkipList<K, T>{
 	public void insert(K searchKey, T newValue){
 		Element<K, T> update = new Element<>(null, null, maxLevel);
 		Element<K, T> x = header;
-		
+
 	}
 
 	public int randomLevel(){
@@ -55,8 +55,9 @@ public class SkipList<K, T>{
 
 	}
 
-	public void traverseInOrder(){
-
+	public void traverseInOrderAndPrintKeys(){
+		Element<K, T> current = header;
+		
 	}
 
 

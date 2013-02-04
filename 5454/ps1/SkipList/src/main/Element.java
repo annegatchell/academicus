@@ -43,6 +43,12 @@ public class Element<K, T>{
 		return levels.advanceCurrent();
 	}
 
+	public void advanceToBottomLevel(){
+		while(getCurrentLevelNum() > 0){
+			levels.advanceCurrent();
+		}
+	}
+
 	public void setTopLevel(Link<K, T> tL){
 		levels.setRoot(tL);
 	}
