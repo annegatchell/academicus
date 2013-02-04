@@ -3,15 +3,23 @@ package src.main;
 public class Link<K, T>{
 	private Element<K, T> nextElement;
 	private Link<K, T> nextLevelDown;
+	private int num;
 
-	public void Link(){
+	public Link(int n){
+		num = n;
 		nextElement = null;
 		nextLevelDown = null;
 	}
 
-	public void Link(Element<K, T> nextE, Link<K, T> nextL){
+	// public void Link(){
+	// 	nextElement = null;
+	// 	nextLevelDown = null;
+	// }
+
+	public Link(Element<K, T> nextE, Link<K, T> nextL, int n){
 		nextElement = nextE;
 		nextLevelDown = nextL;
+		num = n;
 	}
 
 	public void setNextElement(Element<K, T> nextE){
@@ -32,5 +40,13 @@ public class Link<K, T>{
 
 	public Link<K, T> getNextLevelDown(){
 		return nextLevelDown;
+	}
+
+	public int getNum(){
+		return num;
+	}
+
+	public void setNum(int n){
+		num = n;
 	}
 }

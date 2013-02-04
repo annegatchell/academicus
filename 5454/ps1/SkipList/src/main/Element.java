@@ -41,4 +41,11 @@ public class Element<K, T>{
 	public void setKey(K k){
 		key = k;
 	}
+
+	public void setData(T newData){
+		data = newData;
+	}
+	public T getData(){
+		return data;
+	}
 }

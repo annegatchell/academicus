@@ -8,13 +8,15 @@ import src.main.Link;
 import src.main.Element;
 
 public class LinkTest {
+
+    Link<Integer, String> test1;
     /**
      * Sets up the test fixture. 
      * (Called before every test case method.)
      */
     @Before
     public void setUp() {
-        
+        test1 = new Link<>(1);
     }
 
     /**
@@ -28,6 +30,8 @@ public class LinkTest {
     
     @Test
     public void test() {
+        
+        assertNotNull(test1);
     }
 
     public static void main(String args[]) {

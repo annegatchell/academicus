@@ -35,14 +35,18 @@ public class LinkedListTest {
         assertEquals("The list should have 4 elements", 4, lNull4.getLength());
         //Root node should not be null
         assertNotNull("The root node shouldn't be null", lNull4.getRoot());
+        assertEquals("Root, current = 3", 3, lNull4.getCurrentLinkNum());
         //Root and current should be the same node right now
         assertSame("The root node should be same as current node", lNull4.getRoot(), lNull4.getCurrentLink());
         lNull4.advanceCurrent(); //now at 1
+        assertEquals("Current = 2", 2, lNull4.getCurrentLinkNum());
         assertNotNull("The current node shouldn't be null", lNull4.getCurrentLink());
         assertSame("The next node after root should be the same as current now", lNull4.getRoot().getNextLevelDown(), lNull4.getCurrentLink());
         lNull4.advanceCurrent(); //now at 2
+        assertEquals("Current = 1", 1, lNull4.getCurrentLinkNum());
         assertNotNull("The current node shouldn't be null", lNull4.getCurrentLink());
         lNull4.advanceCurrent(); //now at 3
+        assertEquals("Current = 0", 0, lNull4.getCurrentLinkNum());
         assertNotNull("The current node shouldn't be null", lNull4.getCurrentLink());
         lNull4.advanceCurrent(); //now at 3
         assertNull("The current node should be null now", lNull4.getCurrentLink());

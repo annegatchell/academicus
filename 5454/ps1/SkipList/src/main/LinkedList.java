@@ -13,39 +13,41 @@ public class LinkedList<K, T>{
 	}
 
 	//Set up the root of a linked list
-	public LinkedList(int l, Link<K, T> lL){
-		root = lL;
-		current = root;
-		length = l;
-	}
+	// public LinkedList(int l, Link<K, T> lL){
+	// 	root = lL;
+	// 	current = root;
+	// 	length = l;
+	// }
 
 	//Set up the root of a linked list with the element
 	//TODO: WTF
-	public LinkedList(int l, Element<K, T> elem){
-		length = l;
-		Link<K, T> link= new Link<K, T>();
-		root = link;
-		current = root;
-	}
+	// public LinkedList(int l, Element<K, T> elem){
+	// 	length = l;
+	// 	Link<K, T> link= new Link<K, T>();
+	// 	root = link;
+	// 	current = root;
+	// }
 
 	//Create a new linked list of nulls
 	public LinkedList(int l){
 		length = l;
-		root = new Link<K, T>();
+		root = new Link<K, T>(l-1);
 		current = root;
 		for(int i = 1; i < length; i++){
-			current.setNextLevelDown(new Link<K, T>());
+			current.setNextLevelDown(new Link<K, T>(l-1-i));
 			current = current.getNextLevelDown();
 		}
 		current = root;
 	}
 
 	public void growListByNumElementsAtRoot(int len){
+		//Update length
+		length = length + len;
 		current = root;
-		Link<K, T> beginning = new Link<K, T>();
+		Link<K, T> beginning = new Link<K, T>(length-1);
 		Link<K, T> temp = beginning;
 		for(int i = 1; i < len; i++){
-			temp.setNextLevelDown(new Link<K, T>());
+			temp.setNextLevelDown(new Link<K, T>(length-1-i));
 			temp = temp.getNextLevelDown();
 		}
 		//Point to the current root
@@ -54,8 +56,7 @@ public class LinkedList<K, T>{
 		root = beginning;
 		//Set current to be the root
 		current = root;
-		//Update length
-		length = length + len;		
+		
 	}
 
 	public void setNextLink(Link<K, T> l){
@@ -69,6 +70,10 @@ public class LinkedList<K, T>{
 
 	public Link<K, T> getCurrentLink(){
 		return current;
+	}
+
+	public int getCurrentLinkNum(){
+		return current.getNum();
 	}
 
 	public Element<K, T> getCurrentLinkNextElement(){
