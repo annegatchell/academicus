@@ -62,7 +62,7 @@ public class Element<K extends Comparable<K>, T>{
 	}
 
 	public void advanceToBottomLevel(){
-		while(getCurrentLevelNum() > 0){
+		while(getCurrentLevelNum() > 1){
 			levels.advanceCurrent();
 		}
 	}

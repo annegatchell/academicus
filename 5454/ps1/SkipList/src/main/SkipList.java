@@ -13,7 +13,7 @@ public class SkipList<K extends Comparable<K>, T>{
 	public SkipList(float probability){
 		p = probability;
 		numElements = 0;
-		level = 0;
+		level = 1;
 		maxLevel = 16;
 		header = new Element<K, T>(null, null, maxLevel);
 	}
@@ -22,6 +22,7 @@ public class SkipList<K extends Comparable<K>, T>{
 		p = probability;
 		numElements = 0;
 		maxLevel = powerOfTwoSize;
+		level = 1;
 		header = new Element<K, T>(null, null, maxLevel);
 	}
 
@@ -44,63 +45,74 @@ public class SkipList<K extends Comparable<K>, T>{
 		LinkedList<K, T> update = new LinkedList<>(maxLevel);
 		Element<K, T> x = header;
 		K key;
-		while(x.getCurrentLevelNum() > 0){
+		//Go from top level down to level 1
+		while(x.getCurrentLevelNum() > 1){
+			//If the next element at this level is not null and is less than the key, advance
 			while(x.getNextElementForCurrentLevel() != null && x.getNextElementKeyForCurrentLevel().compareTo(searchKey) < 0){
 				x = x.getNextElementForCurrentLevel();
 			}
+			//Store the current element in our update save list
 			update.setCurrentLink(x.getCurrentLevelLink());
-			if(x.getCurrentLevelNum() == maxLevel -1){
+			//Since update is a linked list, we need to set the root if this is the top
+			if(x.getCurrentLevelNum() == maxLevel){
 				update.setRoot(x.getCurrentLevelLink());
 			}
-			//System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
-			//System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
+			System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
+			System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
+			//Advance to the next level down in our update list as well as our current element
 			update.advanceCurrent();
 			x.advanceCurrentLevel();
 		}
-		//System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
+		System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
 
 
 /**** Purely code to test *****/
 		update.resetCurrentLinkToRoot();
-		while(update.getCurrentLinkNum() > 0){
-			//System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
+		while(update.getCurrentLinkNum() > 1){
+			System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
 			update.advanceCurrent();
 		}
-		//System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
+		System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
 		
 /**************/
-
+		//Go to the next element
 		x = x.getNextElementForCurrentLevel();
+		//If key == our key, update the data
 		if(x != null && x.getKey().compareTo(searchKey) == 0){
 			x.setData(newValue);
 		}else{
+		//Otherwise, create a new Element with a level v
 			int v = randomLevel();
 			System.out.println("Level generated: "+v);
+			//Keep track of our list's current level for Search
 			if(v > level){
 				level = v;
 			}
 			x = new Element<K, T>(searchKey, newValue, v+1);
+			//Go to the top of the update list, attach the new vector
 			update.resetCurrentLinkToRoot();
 			int lev;
-			while((lev = update.getCurrentLinkNum()) > 0){
-				//System.out.println("lev "+ lev);
-				if(lev < v){
-					//System.out.println("HEREin");
+			while((lev = update.getCurrentLinkNum()) > 1){
+				System.out.println("lev "+ lev);
+				//When we hit level v, start splicing in the new element x
+				if(lev <= v){
+					// System.out.println("HEREin");
 					x.setNextElementForCurrentLevel(update.getCurrentLinkNextElement());
 					update.setCurrentLinkNextElement(x);
 					x.advanceCurrentLevel();
 				}
 				update.advanceCurrent();
 			}
-			//Set the 0th level
-			if(lev < v){
-				//System.out.println("HERE lev "+lev);
+			//Set the 1st/bottom level without advancing
+			if(lev <= v){
+				System.out.println("HERE lev "+lev);
 				x.setNextElementForCurrentLevel(update.getCurrentLinkNextElement());
 				update.setCurrentLinkNextElement(x);
 			}
 			update.advanceCurrent();
 
 			numElements++;
+			//Reset current pointers
 			x.resetCurrentLevelToRoot();
 			header.resetCurrentLevelToRoot();
 		}
@@ -109,7 +121,7 @@ public class SkipList<K extends Comparable<K>, T>{
 	}
 
 	public int randomLevel(){
-		int v = 0;
+		int v = 1;
 		Random rand = new Random();
 		//random value between [0...1)
 		while (rand.nextDouble() < p && v < maxLevel){

@@ -38,11 +38,11 @@ public class ElementTest {
     public void testAdvancedToBottomLevel(){
         //Element<Integer, String> nullElemIntString5 = new Element<>(2, "My DATA", 5);
         nullElemIntString5.advanceToBottomLevel();
-        assertEquals("Should be at level 0", 0, nullElemIntString5.getCurrentLevelNum());
+        assertEquals("Should be at level 1", 1, nullElemIntString5.getCurrentLevelNum());
         assertNull(nullElemIntString5.advanceCurrentLevel());
     }
 
-    
+
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main("src.test.ElementTest");
