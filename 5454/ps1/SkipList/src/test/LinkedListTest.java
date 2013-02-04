@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Assert;
 import src.main.LinkedList;
 import src.main.Link;
+import src.main.Element;
 
 public class LinkedListTest {
 
@@ -69,6 +70,17 @@ public class LinkedListTest {
         lNull4Copy.advanceCurrent();
         assertSame("null", lNull4.getCurrentLink(), lNull4Copy.getCurrentLink()); 
     }
+
+    // @Test void testSetUpNewLinkedListFromArray(){
+    //     Element<Integer, String>[] a = (Element<Integer, String>) new Object[4];
+    //     a[0] = null;
+    //     Element<Integer, String> _25 = new Element<Integer, String>(25, "25", 3);
+    //     a[1] = _25;
+    //     a[2] = _25;
+    //     a[3] = new Element<Integer, String>(19, "19", 1);
+    //     LinkedList<Integer, String> lNull4Array = new LinkedList<>(4, a);
+
+    // }
 
     @Test
     public void testGrowLinkedList(){

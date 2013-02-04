@@ -1,6 +1,6 @@
 package src.main;
 
-public class LinkedList<K, T>{
+public class LinkedList<K extends Comparable<K>, T>{
 	private Link<K, T> root;
 	private Link<K, T> current;
 	private int length;
@@ -12,16 +12,28 @@ public class LinkedList<K, T>{
 		length = l;
 	}
 
-	public LinkedList(int l, Element<K, T>[] elems){
-		length = l;
-		root = new Link<>(length-1, elems[length-1]);
-		current = root;
-		for(int i = length - 2; i > -1; i--){
-			current.setNextLevelDown(i, elems[i]);
-			current = current.getNextLevelDown();
-		}
-		current = root;
-	}
+	// public LinkedList(int l, Element<K, T> elem){
+	// 	int elemSize = elem.getHeight();
+	// 	Link<K, T> temp;
+	// 	elem.resetCurrentLevelToRoot();
+	// 	while(elem.getCurrentLevelNum() >= l){
+	// 		temp = elem.advanceCurrentLevel();
+	// 	}
+	// 	root = temp;
+	// 	current = root;
+	// 	length = l;
+	// }
+
+	// public LinkedList(int l, Element<K, T>[] elems){
+	// 	length = l;
+	// 	root = new Link<>(length-1, elems[length-1]);
+	// 	current = root;
+	// 	for(int i = length - 2; i > -1; i--){
+	// 		current.setNextLevelDown(elems[i]);
+	// 		current = current.getNextLevelDown();
+	// 	}
+	// 	current = root;
+	// }
 
 	//Set up the root of a linked list
 	// public LinkedList(int l, Link<K, T> lL){
@@ -82,6 +94,9 @@ public class LinkedList<K, T>{
 	public Link<K, T> getCurrentLink(){
 		return current;
 	}
+	public void setCurrentLink(Link<K, T> l){
+		current = l;
+	}
 
 	public int getCurrentLinkNum(){
 		return current.getNum();
@@ -89,6 +104,10 @@ public class LinkedList<K, T>{
 
 	public Element<K, T> getCurrentLinkNextElement(){
 		return current.getNextElement();
+	}
+
+	public void setCurrentLinkNextElement(Element<K, T> elem){
+		current.setNextElement(elem);
 	}
 
 	public K getCurrentLinkNextKey(){

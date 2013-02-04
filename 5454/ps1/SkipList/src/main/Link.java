@@ -1,6 +1,6 @@
 package src.main;
 
-public class Link<K, T>{
+public class Link<K extends Comparable<K>, T>{
 	private Element<K, T> nextElement;
 	private Link<K, T> nextLevelDown;
 	private int num;
@@ -18,7 +18,6 @@ public class Link<K, T>{
 
 	public Link(int n, Element<K, T> nextE){
 		nextElement = nextE;
-		nextLevelDown = nextL;
 		num = n;
 	}
 

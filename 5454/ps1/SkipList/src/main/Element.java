@@ -1,6 +1,6 @@
 package src.main;
 
-public class Element<K, T>{
+public class Element<K extends Comparable<K>, T>{
 	private LinkedList<K, T> levels;
 	private int height;
 	private K key;
@@ -23,12 +23,12 @@ public class Element<K, T>{
 		levels = lst;
 	}
 
-	public Element(K k, T d, Element<K, T>[] update, int height){
-		key = k;
-		data = d;
-		height = height;
-		levels = new LinkedList<>(height, elems);
-	}
+	// public Element(K k, T d, Element<K, T>[] update, int height){
+	// 	key = k;
+	// 	data = d;
+	// 	height = height;
+	// 	levels = new LinkedList<>(height, update);
+	// }
 
 	public int getCurrentLevelNum(){
 		return levels.getCurrentLinkNum();
@@ -36,6 +36,10 @@ public class Element<K, T>{
 
 	public Element<K, T> getNextElementForCurrentLevel(){
 		return levels.getCurrentLinkNextElement();
+	}
+
+	public void setNextElementForCurrentLevel(Element<K, T> elem){
+		levels.setCurrentLinkNextElement(elem);
 	}
 
 	public K getNextElementKeyForCurrentLevel(){
@@ -48,6 +52,10 @@ public class Element<K, T>{
 
 	public Link<K, T> advanceCurrentLevel(){
 		return levels.advanceCurrent();
+	}
+
+	public Link<K, T> getCurrentLevelLink(){
+		return levels.getCurrentLink();
 	}
 
 	public void advanceToBottomLevel(){
@@ -76,6 +84,10 @@ public class Element<K, T>{
 	}
 	public T getData(){
 		return data;
+	}
+
+	public int getHeight(){
+		return height;
 	}
 
 
