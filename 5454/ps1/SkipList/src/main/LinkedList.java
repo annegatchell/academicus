@@ -40,7 +40,24 @@ public class LinkedList<K, T>{
 		current = root;
 	}
 
+	public void growListByNumElementsAtRoot(int len){
+		Link<K, T> beginning = new Link<K, T>();
+		Link<K, T> temp = beginning;
+		for(int i = 1; i < len; i++){
+			temp.setNextLevelDown(new Link<K, T>());
+		}
+		//Point to the current root
+		temp.setNextLevelDown(root);
+		//Reset root to be the beginning of the list again
+		root = beginning;
+		//Set current to be the root
+		current = root;
+		//Update length
+		length = length + len;
+	}
+
 	public void setNextLink(Link<K, T> l){
+		//Should I check if null or not to make sure it will be 
 		current.setNextLevelDown(l);
 	}
 
