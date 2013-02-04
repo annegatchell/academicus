@@ -80,6 +80,10 @@ public class LinkedList<K, T>{
 		return current.getNextElement();
 	}
 
+	public K getCurrentLinkNextKey(){
+		return current.getNextElementKey();
+	}
+
 	public Link<K, T> advanceCurrent(){
 		current = current.getNextLevelDown();
 		return current;

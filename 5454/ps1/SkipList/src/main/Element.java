@@ -31,8 +31,16 @@ public class Element<K, T>{
 		return levels.getCurrentLinkNextElement();
 	}
 
+	public K getNextElementKeyForCurrentLevel(){
+		return levels.getCurrentLinkNextKey();
+	}
+
 	public void resetCurrentLevelToRoot(){
 		levels.resetCurrentLinkToRoot();
+	}
+
+	public Link<K, T> advanceCurrentLevel(){
+		return levels.advanceCurrent();
 	}
 
 	public void setTopLevel(Link<K, T> tL){
