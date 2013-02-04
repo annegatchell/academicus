@@ -23,8 +23,16 @@ public class Element<K, T>{
 		levels = lst;
 	}
 
+	public int getCurrentLevelNum(){
+		return levels.getCurrentLinkNum();
+	}
+
 	public Element<K, T> getNextElementForCurrentLevel(){
 		return levels.getCurrentLinkNextElement();
+	}
+
+	public void resetCurrentLevelToRoot(){
+		levels.resetCurrentLinkToRoot();
 	}
 
 	public void setTopLevel(Link<K, T> tL){
@@ -48,4 +56,6 @@ public class Element<K, T>{
 	public T getData(){
 		return data;
 	}
+
+
 }

@@ -23,7 +23,7 @@ public class SkipList<K, T>{
 		header = new Element<K, T>(null, null, maxLevel);
 	}
 
-	public T Search(K searchKey){
+	public T search(K searchKey){
 		/*Search(list, searchKey)
 			x := list→header
 			-- loop invariant: x→key < searchKey 
@@ -39,7 +39,8 @@ public class SkipList<K, T>{
 	}
 
 	public void insert(K searchKey, T newValue){
-
+		Element<K, T> update = new Element<>(null, null, maxLevel);
+		
 	}
 
 	public int randomLevel(){
