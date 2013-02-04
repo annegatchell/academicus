@@ -37,8 +37,33 @@ public class SkipList<K extends Comparable<K>, T>{
 			x := x→forward[1]
 			if x→key = searchKey then return x→value
 				else return failure*/
-		Element<K, T> current = header;
-		return header.getData();
+		header.resetCurrentLevelToRoot();
+		Element<K, T> x = header;
+		int lev = x.getCurrentLevelNum();
+		//Go from top level down to level 1
+		while(lev > 0){
+			//If the next element at this level is not null and is less than the key, advance
+			while(x.getNextElementForCurrentLevel() != null && x.getNextElementKeyForCurrentLevel().compareTo(searchKey) < 0){
+				x = x.getNextElementForCurrentLevel();
+			}
+			System.out.println(x.getCurrentLevelNum() + " " + x.getKey());
+			// System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
+			//Advance to the next level down in our update list as well as our current element
+			if(lev > 1){
+				x.advanceCurrentLevel();
+				lev = x.getCurrentLevelNum();
+			}else{
+				lev--;
+			}
+		}
+		//Go to the next element
+		x = x.getNextElementForCurrentLevel();
+		System.out.println("HERE!!!");
+		if(x != null && x.getKey().compareTo(searchKey) == 0){
+			return x.getData();
+		} else {
+			return null;
+		}
 	}
 
 	public void delete(K searchKey){

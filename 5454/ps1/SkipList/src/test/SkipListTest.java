@@ -149,6 +149,27 @@ public class SkipListTest{
     }
 
     @Test
+    public void testManyInsertions(){
+    	test1 = new SkipList<>(0.5f, 16);
+    	Element<Integer, String> insert2 = test1.insert(2, "two");
+    	Element<Integer, String> insert5 = test1.insert(5, "five");
+    	Element<Integer, String> insert4 = test1.insert(4, "four");
+    	Element<Integer, String> insert1 = test1.insert(1, "one");
+    	Element<Integer, String> insert3 = test1.insert(3, "three");
+    }
+
+    @Test
+    public void testSearch(){
+		test1 = new SkipList<>(0.5f, 16);
+    	Element<Integer, String> insert2 = test1.insert(2, "two");
+    	Element<Integer, String> insert5 = test1.insert(5, "five");
+    	Element<Integer, String> insert4 = test1.insert(4, "four");
+    	Element<Integer, String> insert1 = test1.insert(1, "one");
+    	Element<Integer, String> insert3 = test1.insert(3, "three");
+    	assertEquals("three",test1.search(3));
+    }
+
+    @Test
     public void testTraverseInOrder(){
         
     }
