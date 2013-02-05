@@ -16,10 +16,51 @@
 \begin{document}
 \maketitle
 \section{}
+For reference: 
+$1 day *(24 hrs/1 day)*(3600s/1 hr) *(10^{6}/1s) = 8.64 x 10^{4} \mu s$
+
+
 \subsection{}
+In this case, Acme should pay professor Flitwick.\\
+$ n = 41$\\
+$f(n) = 1.99^{n}$ \\
+$g(n) = n^{3}$ \\
+$t = 17 days = 1.4688 x 10^{12} \mu s$\\\\
+Without Flitwick, it takes $ f(41) = 1.99^{41} = 1.79 x 10^{12} \mu s$\\
+With Flitwick it takes $ t + g(n) = 1.47 x 10^{12} \mu s + 41^{3} = 1.46 x 10^{12}\mu s$\\\\
+It will take Flitwick less time to spend 17 days working and then running his program than it will take to just run the program by itself:\\\\
+Flitwick's alg is $17 days, 0.069s$\\
+The other lag will take $20 days, 17 hours, 21 min, 47.45 seconds$
+\subsection{}
+In this case, Acme should not pay professor Flitwick.\\
+$ n = 10^{6}$\\
+$f(n) = n^{2.00}$ \\
+$g(n) = n^{1.99}$ \\
+$t = 2 days = 2*8.64 x 10^{10} \mu s = 1.728 x 10^{11} \mu s$\\\\
+Without Flitwick, it takes $ f(10^{6}) = (10^{6})^{2.00} = 10^{12} \mu s = \\11.574 days = 11 days, 13 hours, 46 minutes, 40 seconds$\\\\
+With Flitwick it takes $ t + g(n) = 2 days + (10^{6})^{1.99} = 1.73 x 10^{11} \mu s + 8.71 x 10^{11}\mu s = 1.044 x 10^{12} \mu s$\\
+$1.044x 10^{12}/8.64 x 10^{10} \mu s = 12.08 days = 12 days, 1 hr, 56 min, 3.6s$\\\\
+It is a close call, but it will be faster to just run the original algorithm and not pay Flitwick.
+\section{}%2
+\section{}%3
+\subsection{}%a
+Is there a c for which $0 \le 2^{nk} \le c2^{n}$  for $ k > 1$?\\\\
+Dividing both sides by $2^{n}$:\\
+$(2^{n})^{k-1} \le c$\\\\
+No. There is no constant c that is greater or equal to $(2^{n})^{k-1}$ for sufficiently large n.
+\subsection{}%b
+Is there a c for which $0 \le 2^{n+k} \le c2^{n}$  for $ 0 \le k \le c$ (some positive constant)?\\\\
+$2^{n}*2^{k} \le c2^{n}$\\
+Dividing both sides by $2^{n}$:\\
+$2^{k} \le c$for 
+Yes. For $n_{o} = 0, c \ge 2^{k}$ where $k \ge 0$.
+\section{}%4
+\subsection{}%a
+\subsection{}%b
+Final order:
+$1$, $n^{1/lg n}$, $2^{lg*n}$, $(\sqrt{2})^{lg n}$, $n$, $n lg n$, $lg(n!)$, $n^{2}$, $(3/2)^{n}$, $e^{n}$, $(lg n)!$, $n!$\\\\
 
-
-
+Both $n lg n$, $lg(n!)$ are in the $O(n lg n)$ equivalence class.
 
 
 \end{document}  
