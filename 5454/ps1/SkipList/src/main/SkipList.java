@@ -43,7 +43,8 @@ public class SkipList<K extends Comparable<K>, T>{
 		//Go from top level down to level 1
 		while(lev > 0){
 			//If the next element at this level is not null and is less than the key, advance
-			while(x.getNextElementForCurrentLevel() != null && x.getNextElementKeyForCurrentLevel().compareTo(searchKey) < 0){
+			while(x.getNextElementForCurrentLevel() != null 
+				&& x.getNextElementKeyForCurrentLevel().compareTo(searchKey) < 0){
 				x = x.getNextElementForCurrentLevel();
 			}
 			//System.out.println(x.getCurrentLevelNum() + " " + x.getKey());
@@ -75,7 +76,8 @@ public class SkipList<K extends Comparable<K>, T>{
 		//Go from top level down to level 1
 		while(lev > 0){
 			//If the next element at this level is not null and is less than the key, advance
-			while(x.getNextElementForCurrentLevel() != null && x.getNextElementKeyForCurrentLevel().compareTo(searchKey) < 0){
+			while(x.getNextElementForCurrentLevel() != null 
+				&& x.getNextElementKeyForCurrentLevel().compareTo(searchKey) < 0){
 				x = x.getNextElementForCurrentLevel();
 			}
 			//Store the current element in our update save list
@@ -144,7 +146,12 @@ public class SkipList<K extends Comparable<K>, T>{
 		//Go from top level down to level 1
 		while(lev > 0){
 			//If the next element at this level is not null and is less than the key, advance
-			while(x.getNextElementForCurrentLevel() != null && x.getNextElementKeyForCurrentLevel().compareTo(searchKey) < 0){
+			if(x.getNextElementForCurrentLevel() != null){
+			System.out.println("Lev key comparision " + x.getNextElementKeyForCurrentLevel() + " " + searchKey + "comp "+ x.getNextElementKeyForCurrentLevel().compareTo(searchKey));
+		}
+			while(x.getNextElementForCurrentLevel() != null 
+					&& x.getNextElementKeyForCurrentLevel().compareTo(searchKey) < 0){
+				System.out.println("Went to next x");
 				x = x.getNextElementForCurrentLevel();
 			}
 			//Store the current element in our update save list
@@ -153,8 +160,8 @@ public class SkipList<K extends Comparable<K>, T>{
 			if(x.getCurrentLevelNum() == maxLevel){
 				update.setRoot(x.getCurrentLevelLink());
 			}
-			// System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
-			// System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
+			System.out.println(x.getCurrentLevelNum() + " " + x.getCurrentLevelLink());
+			System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
 			//Advance to the next level down in our update list as well as our current element
 			if(lev > 1){
 				update.advanceCurrent();
@@ -178,7 +185,10 @@ public class SkipList<K extends Comparable<K>, T>{
 		
 /**************/
 		//Go to the next element
+		System.out.println("Pre last move " + x.getKey());
 		x = x.getNextElementForCurrentLevel();
+		//System.out.println("Post last move " + x.getKey());
+
 		//If key == our key, update the data
 		if(x != null && x.getKey().compareTo(searchKey) == 0){
 			x.setData(newValue);

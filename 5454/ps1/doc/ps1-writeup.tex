@@ -7,6 +7,8 @@
 								% TeX will automatically convert eps --> pdf in pdflatex		
 \usepackage{amssymb}
 \usepackage{float}
+\usepackage{listings}
+
 
 \title{Problem Set 1}
 \author{Anne Gatchell}
@@ -16,12 +18,7 @@
 
 \begin{document}
 \maketitle
-Anne Gatchell
-Nora Conner
-Anshul Kanakia 
-John Klingner 
-Andy McEvoy
-Bill Casson
+
 \section{}
 For reference: 
 $1 day *(24 hrs/1 day)*(3600s/1 hr) *(10^{6}/1s) = 8.64 x 10^{4} \mu s$
@@ -210,8 +207,17 @@ A smallest possible counterexample is as follows:
 \end{figure}
 {\footnotesize I talked about l'hopitals and comparing some of the functions in 4 with John Klingner and Nora Conner, and we looked for examples of binary trees on Wikipedia, which gave good insight. I drew my own tree. Anshul Kanakia, Andy McEvoy, and Bill Casson were working on that problem in the room with the group another day and we did give them a nudge to look for examples. I can't remember if they took it}
 \section{}%9
+My code is at the end of the file. I am still trying to work out a bug in my insertion code. It is difficult to isolated because it does not happen every time you insert something to the list.
+I have implemented Insert, Delete, and Search, but there are still issues.
 {\footnotesize Worked alone on problem 9. Did ask Anshul Kanakia if he used arrays or linked lists for the towers and he said that he used linked lists that then were cross-linked}
 \section{}%10
+Since my SkipList code has bugs for adding things to the list, I was unable to plot the graph.
 {\footnotesize Worked alone on problem 9. Did ask Anshul Kanakia if he used arrays or linked lists for the towers and he said that he used linked lists that then were cross-linked}
+
+\section{SOURCE CODE}
+
+
+
+
 
 \end{document}  

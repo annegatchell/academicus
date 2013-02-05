@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  4 FEB 2013 21:14
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  4 FEB 2013 23:39
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -112,6 +112,31 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \@float@everytoks=\toks18
 \@floatcapt=\box27
 )
+(/usr/local/texlive/2012/texmf-dist/tex/latex/listings/listings.sty
+\lst@mode=\count92
+\lst@gtempboxa=\box28
+\lst@token=\toks19
+\lst@length=\count93
+\lst@currlwidth=\dimen113
+\lst@column=\count94
+\lst@pos=\count95
+\lst@lostspace=\dimen114
+\lst@width=\dimen115
+\lst@newlines=\count96
+\lst@lineno=\count97
+\lst@maxwidth=\dimen116
+
+(/usr/local/texlive/2012/texmf-dist/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2007/02/22 1.4 (Carsten Heinz)
+\c@lstnumber=\count98
+\lst@skipnumbers=\count99
+\lst@framebox=\box29
+)
+(/usr/local/texlive/2012/texmf-dist/tex/latex/listings/listings.cfg
+File: listings.cfg 2007/02/22 1.4 listings configuration
+))
+Package: listings 2007/02/22 1.4 (Carsten Heinz)
+
 (./ps1-writeup.aux
 
 LaTeX Warning: Label `default' multiply defined.
@@ -128,18 +153,18 @@ LaTeX Warning: Label `default' multiply defined.
 )
 \openout1 = `ps1-writeup.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 17.
-LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 19.
+LaTeX Font Info:    ... okay on input line 19.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -177,17 +202,17 @@ LaTeX Font Info:    ... okay on input line 17.
 
 (/usr/local/texlive/2012/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count92
-\scratchdimen=\dimen113
-\scratchbox=\box28
-\nofMPsegments=\count93
-\nofMParguments=\count94
-\everyMPshowfont=\toks19
-\MPscratchCnt=\count95
-\MPscratchDim=\dimen114
-\MPnumerator=\count96
-\makeMPintoPDFobject=\count97
-\everyMPtoPDFconversion=\toks20
+\scratchcounter=\count100
+\scratchdimen=\dimen117
+\scratchbox=\box30
+\nofMPsegments=\count101
+\nofMParguments=\count102
+\everyMPshowfont=\toks20
+\MPscratchCnt=\count103
+\MPscratchDim=\dimen118
+\MPnumerator=\count104
+\makeMPintoPDFobject=\count105
+\everyMPtoPDFconversion=\toks21
 ) (/usr/local/texlive/2012/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
 Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
 )
@@ -232,47 +257,48 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-LaTeX Font Info:    Try loading font information for U+msa on input line 18.
+\c@lstlisting=\count106
+LaTeX Font Info:    Try loading font information for U+msa on input line 20.
 
 (/usr/local/texlive/2012/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2009/06/22 v3.00 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 18.
+LaTeX Font Info:    Try loading font information for U+msb on input line 20.
 
 (/usr/local/texlive/2012/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2009/06/22 v3.00 AMS symbols B
 )
-Underfull \hbox (badness 10000) in paragraph at lines 31--41
+Underfull \hbox (badness 10000) in paragraph at lines 28--38
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 31--41
+Underfull \hbox (badness 10000) in paragraph at lines 28--38
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 31--41
+Underfull \hbox (badness 10000) in paragraph at lines 28--38
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 42--52
+Underfull \hbox (badness 10000) in paragraph at lines 39--49
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 42--52
+Underfull \hbox (badness 10000) in paragraph at lines 39--49
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 42--52
+Underfull \hbox (badness 10000) in paragraph at lines 39--49
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 42--52
+Underfull \hbox (badness 10000) in paragraph at lines 39--49
 
  []
 
@@ -282,52 +308,57 @@ Underfull \hbox (badness 10000) in paragraph at lines 42--52
 <problem2.jpg, id=14, 2457.18pt x 3276.24pt>
 File: problem2.jpg Graphic file (type jpg)
  <use problem2.jpg>
-Package pdftex.def Info: problem2.jpg used on input line 55.
+Package pdftex.def Info: problem2.jpg used on input line 52.
 (pdftex.def)             Requested size: 319.44461pt x 425.92616pt.
  [2]
-Underfull \hbox (badness 10000) in paragraph at lines 60--64
+Underfull \hbox (badness 10000) in paragraph at lines 57--61
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 60--64
+Underfull \hbox (badness 10000) in paragraph at lines 57--61
 
  []
 
 [3 <./problem2.jpg>]
-Underfull \hbox (badness 10000) in paragraph at lines 66--70
+Underfull \hbox (badness 10000) in paragraph at lines 63--67
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 66--70
+Underfull \hbox (badness 10000) in paragraph at lines 63--67
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 71--77
+Underfull \hbox (badness 10000) in paragraph at lines 68--74
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 71--77
+Underfull \hbox (badness 10000) in paragraph at lines 68--74
 
  []
 
 <problem4a1.png, id=22, 3276.24pt x 2457.18pt>
 File: problem4a1.png Graphic file (type png)
  <use problem4a1.png>
-Package pdftex.def Info: problem4a1.png used on input line 81.
+Package pdftex.def Info: problem4a1.png used on input line 78.
 (pdftex.def)             Requested size: 393.13184pt x 294.84888pt.
 
 <problem4a2.jpg, id=24, 3087.535pt x 1441.385pt>
 File: problem4a2.jpg Graphic file (type jpg)
  <use problem4a2.jpg>
-Package pdftex.def Info: problem4a2.jpg used on input line 88.
+Package pdftex.def Info: problem4a2.jpg used on input line 85.
 (pdftex.def)             Requested size: 370.48822pt x 172.95872pt.
  [4]
 [5 <./problem4a1.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 95--97
+Underfull \hbox (badness 10000) in paragraph at lines 92--94
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 92--94
 
  []
 
@@ -337,68 +368,63 @@ Underfull \hbox (badness 10000) in paragraph at lines 95--97
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 98--100
+Underfull \hbox (badness 10000) in paragraph at lines 101--120
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 104--123
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 104--123
+Underfull \hbox (badness 10000) in paragraph at lines 101--120
 
  []
 
 [6 <./problem4a2.jpg>]
-Underfull \hbox (badness 10000) in paragraph at lines 138--149
+Underfull \hbox (badness 10000) in paragraph at lines 135--146
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 138--149
+Underfull \hbox (badness 10000) in paragraph at lines 135--146
 
  []
 
 [7]
-Underfull \hbox (badness 10000) in paragraph at lines 169--176
+Underfull \hbox (badness 10000) in paragraph at lines 166--173
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 169--176
+Underfull \hbox (badness 10000) in paragraph at lines 166--173
 
  []
 
 [8] <problem6c.jpg, id=44, 3276.24pt x 2457.18pt>
 File: problem6c.jpg Graphic file (type jpg)
  <use problem6c.jpg>
-Package pdftex.def Info: problem6c.jpg used on input line 179.
+Package pdftex.def Info: problem6c.jpg used on input line 176.
 (pdftex.def)             Requested size: 393.13184pt x 294.84888pt.
  [9 <./problem6c.jpg>]
-Underfull \hbox (badness 10000) in paragraph at lines 199--202
+Underfull \hbox (badness 10000) in paragraph at lines 196--199
 
  []
 
 [10] <problem8.png, id=53, 359.3425pt x 178.6675pt>
 File: problem8.png Graphic file (type png)
  <use problem8.png>
-Package pdftex.def Info: problem8.png used on input line 206.
+Package pdftex.def Info: problem8.png used on input line 203.
 (pdftex.def)             Requested size: 251.53802pt x 125.06639pt.
- [11 <./problem8.png>] (./ps1-writeup.aux)
+ [11 <./problem8.png>] [12] (./ps1-writeup.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 2348 strings out of 493488
- 33011 string characters out of 3141326
- 94425 words of memory out of 3000000
- 5627 multiletter control sequences out of 15000+200000
+ 3529 strings out of 493488
+ 50471 string characters out of 3141326
+ 114520 words of memory out of 3000000
+ 6796 multiletter control sequences out of 15000+200000
  11343 words of font info for 43 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 37i,7n,24p,1064b,254s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 38i,7n,32p,1064b,254s stack positions out of 5000i,500n,10000p,200000b,50000s
 </usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
 ></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb>
 </usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
@@ -412,10 +438,10 @@ xlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texli
 ve/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/
 2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2
 012/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb>
-Output written on ps1-writeup.pdf (11 pages, 17441434 bytes).
+Output written on ps1-writeup.pdf (12 pages, 17442471 bytes).
 PDF statistics:
- 99 PDF objects out of 1000 (max. 8388607)
- 66 compressed objects within 1 object stream
+ 102 PDF objects out of 1000 (max. 8388607)
+ 68 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  26 words of extra memory for PDF output out of 10000 (max. 10000000)
 
