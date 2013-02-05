@@ -46,7 +46,7 @@ public class SkipList<K extends Comparable<K>, T>{
 			while(x.getNextElementForCurrentLevel() != null && x.getNextElementKeyForCurrentLevel().compareTo(searchKey) < 0){
 				x = x.getNextElementForCurrentLevel();
 			}
-			System.out.println(x.getCurrentLevelNum() + " " + x.getKey());
+			//System.out.println(x.getCurrentLevelNum() + " " + x.getKey());
 			// System.out.println(update.getCurrentLinkNum() + " " + update.getCurrentLink());
 			//Advance to the next level down in our update list as well as our current element
 			if(lev > 1){
@@ -191,6 +191,7 @@ public class SkipList<K extends Comparable<K>, T>{
 				level = v;
 			}
 			x = new Element<K, T>(searchKey, newValue, v);
+			x.resetCurrentLevelToRoot();
 			//Go to the top of the update list, attach the new vector
 			update.resetCurrentLinkToRoot();
 			lev = update.getCurrentLinkNum();
@@ -198,9 +199,9 @@ public class SkipList<K extends Comparable<K>, T>{
 				// System.out.println("lev "+ lev);
 				//When we hit level v, start splicing in the new element x
 				if(lev <= v){
-					// System.out.println("HEREin");
 					x.setNextElementForCurrentLevel(update.getCurrentLinkNextElement());
 					update.setCurrentLinkNextElement(x);
+					System.out.println("x is "+ x + " "+ x.getNextElementForCurrentLevel() + " update current "+ update.getCurrentLinkNextElement());
 					if(lev > 1)
 						x.advanceCurrentLevel();
 				}
@@ -233,12 +234,32 @@ public class SkipList<K extends Comparable<K>, T>{
 	}
 
 	public void traverseInOrderAndPrintKeys(){
+		int count = 0;
+		K k;
 		Element<K, T> current = header;
-		current.advanceToBottomLevel();
-		while(current.getNextElementKeyForCurrentLevel() != null){
-			current = current.getNextElementForCurrentLevel();
-			System.out.print(current.getKey());
+		while(true){
+			if(current.getNextElementForCurrentLevel() != null){
+				k = current.getNextElementForCurrentLevel().getKey();
+			} else{
+				k = null;
+			}
+			System.out.println(count + "-"+current.getCurrentLevelNum() + " " + k);
+			while(current.getCurrentLevelNum() > 1){
+				current.advanceCurrentLevel();
+				if(current.getNextElementForCurrentLevel() != null){
+					k = current.getNextElementForCurrentLevel().getKey();
+				} else{
+					k = null;
+				}
+				System.out.println(count + "-"+current.getCurrentLevelNum() + " " + k);
+			}
 			current.advanceToBottomLevel();
+			current = current.getNextElementForCurrentLevel();
+			if (current == null){
+				break;
+			}
+			current.resetCurrentLevelToRoot();
+			count++;
 		}
 	}
 

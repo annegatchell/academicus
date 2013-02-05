@@ -76,6 +76,9 @@ public class Element<K extends Comparable<K>, T>{
 	}
 
 	public K getKey(){
+		if(key == null){
+			return null;
+		}
 		return key;
 	}
 	public void setKey(K k){
