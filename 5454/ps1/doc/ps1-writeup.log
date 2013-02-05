@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  4 FEB 2013 23:39
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  4 FEB 2013 23:51
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -305,22 +305,31 @@ Underfull \hbox (badness 10000) in paragraph at lines 39--49
 [1
 
 {/usr/local/texlive/2012/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-<problem2.jpg, id=14, 2457.18pt x 3276.24pt>
+<problem2.jpg, id=14, 433.62pt x 578.16pt>
 File: problem2.jpg Graphic file (type jpg)
  <use problem2.jpg>
 Package pdftex.def Info: problem2.jpg used on input line 52.
-(pdftex.def)             Requested size: 319.44461pt x 425.92616pt.
- [2]
-Underfull \hbox (badness 10000) in paragraph at lines 57--61
+(pdftex.def)             Requested size: 433.61894pt x 578.15858pt.
 
+Overfull \hbox (3.61432pt too wide) in paragraph at lines 52--53
+ [] 
  []
 
+[2]
+Overfull \vbox (93.25471pt too high) has occurred while \output is active []
 
-Underfull \hbox (badness 10000) in paragraph at lines 57--61
-
- []
 
 [3 <./problem2.jpg>]
+Underfull \hbox (badness 10000) in paragraph at lines 57--61
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 57--61
+
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 63--67
 
  []
@@ -340,19 +349,27 @@ Underfull \hbox (badness 10000) in paragraph at lines 68--74
 
  []
 
-<problem4a1.png, id=22, 3276.24pt x 2457.18pt>
+<problem4a1.png, id=22, 433.62pt x 325.215pt>
 File: problem4a1.png Graphic file (type png)
  <use problem4a1.png>
 Package pdftex.def Info: problem4a1.png used on input line 78.
-(pdftex.def)             Requested size: 393.13184pt x 294.84888pt.
+(pdftex.def)             Requested size: 433.61894pt x 325.2142pt.
 
-<problem4a2.jpg, id=24, 3087.535pt x 1441.385pt>
+Overfull \hbox (3.61432pt too wide) in paragraph at lines 78--79
+ [] 
+ []
+
+<problem4a2.jpg, id=24, 433.62pt x 202.7575pt>
 File: problem4a2.jpg Graphic file (type jpg)
  <use problem4a2.jpg>
 Package pdftex.def Info: problem4a2.jpg used on input line 85.
-(pdftex.def)             Requested size: 370.48822pt x 172.95872pt.
- [4]
-[5 <./problem4a1.png>]
+(pdftex.def)             Requested size: 433.61894pt x 202.757pt.
+
+Overfull \hbox (3.61432pt too wide) in paragraph at lines 85--86
+ [] 
+ []
+
+[4] [5 <./problem4a1.png>]
 Underfull \hbox (badness 10000) in paragraph at lines 92--94
 
  []
@@ -377,7 +394,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 101--120
 
  []
 
-[6 <./problem4a2.jpg>]
+[6 <./problem4a2.jpg>] [7]
 Underfull \hbox (badness 10000) in paragraph at lines 135--146
 
  []
@@ -387,7 +404,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 135--146
 
  []
 
-[7]
+[8]
 Underfull \hbox (badness 10000) in paragraph at lines 166--173
 
  []
@@ -397,22 +414,27 @@ Underfull \hbox (badness 10000) in paragraph at lines 166--173
 
  []
 
-[8] <problem6c.jpg, id=44, 3276.24pt x 2457.18pt>
+<problem6c.jpg, id=44, 722.7pt x 542.025pt>
 File: problem6c.jpg Graphic file (type jpg)
  <use problem6c.jpg>
 Package pdftex.def Info: problem6c.jpg used on input line 176.
-(pdftex.def)             Requested size: 393.13184pt x 294.84888pt.
- [9 <./problem6c.jpg>]
+(pdftex.def)             Requested size: 505.88655pt x 379.4149pt.
+
+Overfull \hbox (75.88193pt too wide) in paragraph at lines 176--177
+ [] 
+ []
+
+[9] [10 <./problem6c.jpg>]
 Underfull \hbox (badness 10000) in paragraph at lines 196--199
 
  []
 
-[10] <problem8.png, id=53, 359.3425pt x 178.6675pt>
+<problem8.png, id=53, 359.3425pt x 178.6675pt>
 File: problem8.png Graphic file (type png)
  <use problem8.png>
 Package pdftex.def Info: problem8.png used on input line 203.
 (pdftex.def)             Requested size: 251.53802pt x 125.06639pt.
- [11 <./problem8.png>] [12] (./ps1-writeup.aux)
+ [11] [12 <./problem8.png>] (./ps1-writeup.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
@@ -424,7 +446,7 @@ Here is how much of TeX's memory you used:
  6796 multiletter control sequences out of 15000+200000
  11343 words of font info for 43 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 38i,7n,32p,1064b,254s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 38i,7n,32p,1064b,256s stack positions out of 5000i,500n,10000p,200000b,50000s
 </usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
 ></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb>
 </usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
@@ -438,7 +460,7 @@ xlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texli
 ve/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/
 2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2
 012/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb>
-Output written on ps1-writeup.pdf (12 pages, 17442471 bytes).
+Output written on ps1-writeup.pdf (12 pages, 1188009 bytes).
 PDF statistics:
  102 PDF objects out of 1000 (max. 8388607)
  68 compressed objects within 1 object stream
